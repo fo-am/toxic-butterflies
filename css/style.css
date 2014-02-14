@@ -1,0 +1,15 @@
+html, body {
+    font-family: 'Press Start 2P';
+    color: #fff;
+    font-size:  20;
+    background: #777;
+    // cursor: url(images/mouse.png), default;
+}
+
+.canvas {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+}

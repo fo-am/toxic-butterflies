@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>toxic butterflies</title>
+    <link rel="stylesheet" media="screen" href="http://openfontlibrary.org/face/press-start-2p" rel="stylesheet" type="text/css"/>
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <body bgcolor="#777">
+      <div>
+
+        <center>
+          <canvas class="canvas" id="webgl-canvas" width="1024" height="768"></canvas>
+          <canvas class="canvas" id="canvas" width="1237" height="820"></canvas>
+        </center>
+
+        <div style="display:none;">
+          <h2>output</h2>
+          <pre><div id="output"></div></pre>
+
+          <h2>compiler</h2>
+          <pre><div id="compiled"></div></pre>
+        </div>
+      </div>
+    </body>
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/glMatrix.js"></script>
+    <script src="js/scm.js"></script>
+    <script>init("scm/game.jscm");</script>
+
+
+
+
+</body>
+</html>
