@@ -37,6 +37,16 @@
     (mat4.rotate (renderer-top-tx r) (* (vy v) 0.0174532925) (list 0 1 0))
     (mat4.rotate (renderer-top-tx r) (* (vz v) 0.0174532925) (list 0 0 1))))
 
+(define (maim a u)
+  (let ((c (vector 0 0 0)))
+    (vec3.cross a u c)
+;;    (vec3.normalize c)
+    (mat4.multiply (renderer-top-tx r)
+                   (mat4.create
+                    (list (vx a) (vy a) (vz a) 0
+                          (vx u) (vy u) (vz u) 0
+                          (vx c) (vy c) (vz c) 0
+                          0 0 0 1)))))
 (define scale
   (lambda (v)
     (mat4.scale (renderer-top-tx r) v)))
@@ -85,10 +95,10 @@
     (set! r (renderer-immediate-add
              r (list-ref (renderer-prefab r) 2)))))
 
-(define draw-wp
-  (lambda ()
+(define draw-obj
+  (lambda (obj)
     (set! r (renderer-immediate-add
-             r (list-ref (renderer-prefab r) 3)))))
+             r (list-ref (renderer-prefab r) obj)))))
 
 (define build-polygons
   (lambda (type count)

@@ -29,6 +29,7 @@
 
 (define (rndf) (Math.random))
 
+
 ;; replaced by underlying iterative version
 ;;(define foldl
 ;;  (lambda (fn v l)

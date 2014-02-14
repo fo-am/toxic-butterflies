@@ -16,6 +16,9 @@
 (js "var sin=Math.sin")
 (js "var cos=Math.cos")
 
+(define (sqrt a) (Math.sqrt a))
+(define (square x) (* x x))
+
 (define vector
   (lambda (x y z)
     (list x y z)))
@@ -27,3 +30,36 @@
 (define vector-clone
   (lambda (v)
     (vector (vx v) (vy v) (vz v))))
+
+(define (vadd a b)
+  (vector (+ (vx a) (vx b))
+          (+ (vy a) (vy b))
+          (+ (vz a) (vz b))))
+
+(define (vmag v)
+  (sqrt (+ (square (vx v))
+           (square (vy v))
+           (square (vz v)))))
+
+(define (vsub a b)
+  (vector (- (vx a) (vx b))
+          (- (vy a) (vy b))
+          (- (vz a) (vz b))))
+
+(define (vmul v a)
+  (vector (* (vx v) a) (* (vy v) a) (* (vz v) a)))
+
+(define (vdiv v a)
+  (vector (/ (vx v) a) (/ (vy v) a) (/ (vz v) a)))
+
+(define (vdist a b)
+  (vmag (vsub a b)))
+
+(define (vlerp v1 v2 t)
+	(vadd v1 (vmul (vsub v2 v1) t)))
+
+(define (vnormalise v)
+  (vdiv v (vmag v)))
+
+(define (rndvec) (vector (rndf) (rndf) (rndf)))
+(define (crndvec) (vsub (rndvec) (vector 0.5 0.5 0.5)))

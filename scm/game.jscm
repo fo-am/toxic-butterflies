@@ -17,21 +17,75 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; gp
 
+(define (new-butterfly-state pos dir)
+  (list pos dir (rndf)))
 
-(define (nightjar-intro c)
-  (game-modify-render
-   (lambda (ctx)
-     (set! ctx.font "normal 30pt 'Press Start 2P'")
-     (set! ctx.fill "#fff")
-     (wrap-text ctx "Toxic butterfly" 0 200 1000 1000))
-   (game-modify-buttons
-    (list
-     )
-    c)))
+(define (butterfly-state-pos s) (list-ref s 0))
+(define (butterfly-state-modify-pos s v) (list-replace s 0 v))
+(define (butterfly-state-dir s) (list-ref s 1))
+(define (butterfly-state-modify-dir s v) (list-replace s 1 v))
+(define (butterfly-state-fuzz s) (list-ref s 2))
+
+(define (update-butterfly-state s)
+  (let ((a 0.03))
+  (let ((dir (butterfly-state-dir s)))
+    (butterfly-state-modify-pos
+     (butterfly-state-modify-dir
+      s
+      (vector (+ (* (vx dir) (cos a)) (* (vz dir) (- 0 (sin a))))
+              0
+              (+ (* (vx dir) (sin a)) (* (vz dir) (cos a)))))
+     (vadd (butterfly-state-pos s)
+           (vmul dir 0.05))))))
+
+(define (update-butterflies b)
+  (map
+   (lambda (b)
+     (update-butterfly-state b))
+   b))
+
+(define (render-butterfly s)
+  (with-state
+   (texture test-tex)
+   (translate (butterfly-state-pos s))
+   (maim (vnormalise (butterfly-state-dir s)) (vector 0 1 0))
+   (rotate (vector 0 90 90))
+   (scale (vector 0.5 0.5 0.5))
+   (draw-obj 4)
+   (with-state
+    (let ((a (* 90 (sin (* 10 (+ (butterfly-state-fuzz s) (time)))))))
+      (with-state
+       (rotate (vector 0 0 a))
+       (draw-obj 3))
+      (with-state
+       (rotate (vector 0 0 (- 0 a)))
+       (draw-obj 3))))))
+
+(define (render-butterflies s)
+  (for-each
+   (lambda (p)
+     (render-butterfly p))
+   s))
+
+(define (new-butterfly)
+  (new-butterfly-state (vmul (crndvec) 15) (vnormalise (crndvec))))
+
+(define butterfly-state
+  (build-list
+   20
+   (lambda (i) (new-butterfly))))
+
+(define test-tex (load-texture "wing.png"))
+(define bg-tex (load-texture "bg.png"))
 
 (define (render)
-  (rotate (vector (* 45 (time)) (* 40 (time)) 0))
-  (draw-cube))
+  (set! butterfly-state (update-butterflies butterfly-state))
+  (render-butterflies butterfly-state)
+  (with-state
+   (texture bg-tex)
+   (translate (vector 0 0 -100))
+   (scale (vector 100 100 100))
+   (draw-cube)))
 
 (shader blinn-vertex-shader
 "
@@ -42,12 +96,39 @@ varying vec3 V;
 varying vec3 L;
 varying vec3 T;
 uniform sampler2D texture;
-
-void main()
-{
-  gl_FragColor = vec4(1.0,0.5,0.2,1.0);
+void main() {
+ gl_FragColor = texture2D(texture,vec2(T.s,T.t));
 }
 ")
+
+
+
+(define (nightjar-intro c)
+  (game-modify-render
+   (lambda (ctx)
+     (set! ctx.fill "#fff")
+     (wrap-text ctx
+                (string-append "Num butterflies: " (length butterfly-state))
+                -470 100 1000 1000))
+   (game-modify-buttons
+    (list
+     (image-button
+      "" 80 100 "none" (find-image "plus.png")
+      (lambda (c)
+        (set! butterfly-state (cons (new-butterfly) butterfly-state))
+        c))
+
+     (image-button
+      "" 50 100 "none" (find-image "minus.png")
+      (lambda (c)
+        (set! butterfly-state (cdr butterfly-state))
+        c))
+
+
+     )
+    c)))
+
+
 
 
 (every-frame (render))
@@ -55,11 +136,11 @@ void main()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; startup
 
-(set! ctx.font "normal 50pt 'Press Start 2P'")
-
 (load-images!
  (append
   (list
-   "heliconius.png"))
+   "heliconius.png"
+   "plus.png"
+   "minus.png"))
  (lambda ()
    (start-game canvas ctx)))

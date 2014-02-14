@@ -146,4 +146,20 @@
           (buffer gl "n" torus-normals 3)
           (buffer gl "t" torus-texcoords 3)
           ))
+        (build-primitive
+         gl
+         (length wing-vertices)
+         (list
+          (buffer gl "p" wing-vertices 3)
+          (buffer gl "n" wing-normals 3)
+          (buffer gl "t" wing-texcoords 3)
+          ))
+        (build-primitive
+         gl
+         (length body-vertices)
+         (list
+          (buffer gl "p" body-vertices 3)
+          (buffer gl "n" body-normals 3)
+          (buffer gl "t" body-texcoords 3)
+          ))
         )))))

@@ -548,7 +548,7 @@ function init(filename) {
             console.log(e.stack);
         }
 
-        var js=zc.load("scm/base.scm");
+        var js=zc.load("scm/base.jscm");
         js+=zc.load("scm/webgl.scm");
         js+=zc.load("scm/texture.scm");
         js+=zc.load("scm/maths.scm");
