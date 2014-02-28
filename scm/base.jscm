@@ -14,11 +14,12 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(define (msg a)
-  (display a)(newline))
+;; basic scheme stuff we need, and some tests
 
-(define (dbg a)
-  (msg a) a)
+(define display (lambda (str) (console.log str)))
+(define newline (lambda () (console.log "\n")))
+(define (msg a) (display a))
+(define (dbg a) (msg a) a)
 
 (define zero?
   (lambda (n)
@@ -41,16 +42,14 @@
     (foldl
      (lambda (i r)
        (append r (list (fn i))))
-     ()
-     l)))
+     () l)))
 
 (define filter
   (lambda (fn l)
     (foldl
      (lambda (i r)
        (if (fn i) (append r (list i)) r))
-     ()
-     l)))
+     () l)))
 
 (define for-each
   (lambda (fn l)
@@ -58,8 +57,9 @@
      (lambda (i r)
        (fn i))
      ()
-     l)
-    #f))
+     l) #f))
+
+;; index versions provide count for first argument
 
 (define index-map
   (lambda (fn l)
@@ -77,16 +77,10 @@
      (lambda (e r)
        (fn r e)
        (+ r 1))
-     0
-     l)))
+     0 l)))
 
 ;; fix js modulo irt negative numbers
-(define (modulo m n)
-  (js "((m%n)+n)%n"))
-
-(define display (lambda (str) (console.log str)))
-
-(define newline (lambda () (zc.to_page "output" "\n")))
+(define (modulo m n) (js "((m%n)+n)%n"))
 
 (define (sin a) (Math.sin a))
 (define (cos a) (Math.cos a))
@@ -154,36 +148,35 @@
         (* n (factorial (- n 1))))))
 
 ;; convert code to text form
-(define (scheme-txt v)
-  (cond
-    ((number? v) v)
-    ((string? v) (string-append "'" v "'"))
-    ((boolean? v) (if v "#t" "#f"))
-    ((list? v)
-     (cond
-       ((null? v) "()")
-       (else
-        (list-txt v))))
-   (else (msg (+ "scheme->txt, unsupported type for " v)))))
-
-(define (list-txt l)
-  (define (_ l s)
-    (cond
-     ((null? l) s)
-     (else
-      (_ (cdr l)
-         (string-append
-          s
-          (if (not (eq? s "")) " " "")
-          (scheme-txt (car l)))))))
-  (string-append "(list " (_ l "") ")"))
+; (define (scheme-txt v)
+;  (cond
+;   ((number? v) v)
+;   ((string? v) (string-append "\"" v "\""))
+;   ((boolean? v) (if v "#t" "#f"))
+;   ((list? v)
+;    (cond
+;     ((null? v) "()")
+;     (else
+;      (list-txt v))))
+;   (else (msg (+ "scheme->txt, unsupported type for " v)))))
+;
+;(define (list-txt l)
+;  (define (_ l s)
+;    (cond
+;     ((null? l) s)
+;     (else
+;      (_ (cdr l)
+;         (string-append
+;          s
+;          (if (not (eq? s "")) " " "")
+;          (scheme-txt (car l)))))))
+;  (string-append "(list " (_ l "") ")"))
 
 
 (define a 0)
 
 (define unit-test
   (lambda ()
-    (display "unit tests running...")
     (set! a 10)
     (when (not (eq? 4 4)) (display "eq? failed"))
     (when (eq? 2 4) (display "eq?(2) failed"))
@@ -219,7 +212,5 @@
     (when (not (eq? (cond (#t (+ 3 2) (+ 100 1)) (else (+ 4 3))) 101)) (display "cond test failed"))
     (when (not (eq? (when #t (+ 3 2) (+ 100 1)) 101)) (display "when test failed"))
     ))
-
-(display "base.scm starting up...")
 
 (unit-test)

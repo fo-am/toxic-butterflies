@@ -47,6 +47,23 @@
                           (vx u) (vy u) (vz u) 0
                           (vx c) (vy c) (vz c) 0
                           0 0 0 1)))))
+
+(define (camera-transform)
+  (renderer-camera r))
+
+(define (view-transform)
+  (renderer-view r))
+
+;; fudged to match canvas...
+(define (project-point p)
+  (let ((ret (list (vx p) (vy p) (vz p) 1))
+        (gl (renderer-gl r)))
+    (mat4.multiplyVec4 (renderer-world-to-screen r) ret)
+    (vec3.create (list (* (+ (/ (vx ret) (list-ref ret 3)) 1) gl.viewportWidth 0.6)
+                       (* (+ (/ (- 0 (vy ret)) (list-ref ret 3)) 0.95) gl.viewportHeight 0.55)
+
+                       0))))
+
 (define scale
   (lambda (v)
     (mat4.scale (renderer-top-tx r) v)))

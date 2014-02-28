@@ -15,7 +15,6 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; gp
 
 (define (new-butterfly-state pos dir)
   (list pos dir (rndf)))
@@ -25,6 +24,9 @@
 (define (butterfly-state-dir s) (list-ref s 1))
 (define (butterfly-state-modify-dir s v) (list-replace s 1 v))
 (define (butterfly-state-fuzz s) (list-ref s 2))
+
+(define (butterfly-screen-pos s)
+  (project-point (butterfly-state-pos s)))
 
 (define (update-butterfly-state s)
   (let ((a 0.03))
@@ -104,29 +106,50 @@ void main() {
 
 
 (define (nightjar-intro c)
-  (game-modify-render
-   (lambda (ctx)
-     (set! ctx.fill "#fff")
-     (wrap-text ctx
-                (string-append "Num butterflies: " (length butterfly-state))
-                -470 100 1000 1000))
-   (game-modify-buttons
-    (list
-     (image-button
-      "" 80 100 "none" (find-image "plus.png")
-      (lambda (c)
-        (set! butterfly-state (cons (new-butterfly) butterfly-state))
-        c))
+  (game-modify-mouse-hook
+   (lambda (e c)
+     (set! butterfly-state
+           (filter
+            (lambda (b)
+              (let ((pos (butterfly-screen-pos b)))
+                (> (vdist (vector (game-mx c) (game-my c) 0) pos) 50)))
+            butterfly-state))
+     c)
+   (game-modify-render
+    (lambda (ctx)
+      (set! ctx.fill "#fff")
+      (set! ctx.strokeStyle "#fff")
 
-     (image-button
-      "" 50 100 "none" (find-image "minus.png")
-      (lambda (c)
-        (set! butterfly-state (cdr butterfly-state))
-        c))
+      ;;(for-each
+      ;; (lambda (b)
+      ;;   (let ((pos (butterfly-screen-pos b)))
+      ;;     (ctx.beginPath)
+      ;;     (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
+      ;;     (ctx.closePath)
+      ;;     (ctx.stroke)))
+      ;; butterfly-state)
 
 
-     )
-    c)))
+      (wrap-text ctx
+                 (string-append "Num butterflies: " (length butterfly-state))
+                 -470 100 1000 1000))
+    (game-modify-buttons
+     (list
+      (image-button
+       "" 80 100 "none" (find-image "plus.png")
+       (lambda (c)
+         (set! butterfly-state (cons (new-butterfly) butterfly-state))
+         c))
+
+      (image-button
+       "" 50 100 "none" (find-image "minus.png")
+       (lambda (c)
+         (set! butterfly-state (cdr butterfly-state))
+         c))
+
+
+      )
+     c))))
 
 
 

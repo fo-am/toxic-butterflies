@@ -31,7 +31,7 @@
         (set! gl.viewportHeight canvas.height)
         (set! r (renderer gl))
         ;; set up camera transform
-        (mat4.translate (renderer-camera r) (list 0 0 -10))
+        (mat4.translate (renderer-camera r) (list 0 0 -20))
         (set! r (renderer-build-prefab r))
         (gl.clearColor 0.0 0.0 0.0 1.0)
         (gl.enable gl.DEPTH_TEST)

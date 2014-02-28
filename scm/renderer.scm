@@ -22,6 +22,7 @@
      ()
      (mat4.identity (mat4.create))
      (mat4.identity (mat4.create))
+     (mat4.identity (mat4.create))
      (list (state gl))
      ()
      #f
@@ -32,14 +33,15 @@
 (define renderer-modify-list (lambda (r v) (list-replace r 1 v)))
 (define renderer-view (lambda (r) (list-ref r 2)))
 (define renderer-camera (lambda (r) (list-ref r 3)))
-(define renderer-stack (lambda (r) (list-ref r 4)))
-(define renderer-modify-stack (lambda (r v) (list-replace r 4 v)))
-(define renderer-immediate-prims (lambda (r) (list-ref r 5)))
-(define renderer-modify-immediate-prims (lambda (r v) (list-replace r 5 v)))
-(define renderer-hook (lambda (r) (list-ref r 6)))
-(define renderer-modify-hook (lambda (r v) (list-replace r 6 v)))
-(define renderer-prefab (lambda (r) (list-ref r 7)))
-(define renderer-modify-prefab (lambda (r v) (list-replace r 7 v)))
+(define renderer-world-to-screen (lambda (r) (list-ref r 4)))
+(define renderer-stack (lambda (r) (list-ref r 5)))
+(define renderer-modify-stack (lambda (r v) (list-replace r 5 v)))
+(define renderer-immediate-prims (lambda (r) (list-ref r 6)))
+(define renderer-modify-immediate-prims (lambda (r v) (list-replace r 6 v)))
+(define renderer-hook (lambda (r) (list-ref r 7)))
+(define renderer-modify-hook (lambda (r v) (list-replace r 7 v)))
+(define renderer-prefab (lambda (r) (list-ref r 8)))
+(define renderer-modify-prefab (lambda (r v) (list-replace r 8 v)))
 
 (define renderer-add
   (lambda (r p)
@@ -88,9 +90,10 @@
       (gl.viewport 0 0 gl.viewportWidth gl.viewportHeight)
       (gl.clearColor 1.0 0.2 0.8 1)
       (gl.clear (js "gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT"))
-      (mat4.perspective 45 (/ gl.viewportWidth gl.viewportHeight) 0.1 100.0
+      (mat4.perspective 45 (/ gl.viewportWidth gl.viewportHeight) 0.1 1000.0
                         (renderer-view r))
-
+      ;; for inspection purposes...
+      (mat4.multiply (renderer-view r) (renderer-camera r) (renderer-world-to-screen r))
       (mat4.identity (renderer-top-tx r))
 
       (when hook (js "try{") (hook) (js "} catch(e) { ") (display e) (js "}"))
