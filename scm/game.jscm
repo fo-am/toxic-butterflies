@@ -104,21 +104,111 @@ void main() {
 ")
 
 
+(define (stroke-pie ctx x y time max-time)
+  (ctx.beginPath)
+  (ctx.moveTo x y)
+  (ctx.arc
+   x y 50 (+ (* Math.PI -0.5)
+             (/ (* time Math.PI 2) max-time))
+   (* Math.PI -0.5)
+   true)
+  (ctx.closePath))
+
+(define (draw-pie ctx x y time max-time r g b)
+  (stroke-pie ctx (+ x 3) (+ y 3) max-time max-time)
+  (set! ctx.fillStyle "#000")
+  (ctx.fill)
+
+  (stroke-pie ctx x y time max-time)
+  (set! ctx.fillStyle (string-append "rgba(" (Math.floor r) ", "
+                                     (Math.floor g) ", "
+                                     (Math.floor b) ", 1.0)"))
+  (ctx.fill)
+
+  (set! ctx.lineWidth 1)
+  (set! ctx.fillStyle "#fff")
+  (set! ctx.font "normal 30pt gnuolane")
+  (ctx.fillText (Math.floor time) x (+ y 20))
+  )
+
+(define (draw-flash ctx x y rad r g b a)
+  (ctx.beginPath)
+  (ctx.arc x y rad 0 (* Math.PI 2) true)
+  (ctx.closePath)
+  (let ((grd (ctx.createRadialGradient x y 50 x y 100)))
+    (grd.addColorStop 0 (string-append "rgba(0, 255, 0, " a ")"))
+    (grd.addColorStop 1 (string-append "rgba(255, 255, 0, 0.0)"))
+    (set! ctx.fillStyle grd)
+    (ctx.fill)))
+
+(define (make-gobble x y)
+  (set! gobble-x x)
+  (set! gobble-y y)
+  (set! gobble-t 0))
+
+(define gobble-x 0)
+(define gobble-y 0)
+(define gobble-t 1)
+
+(define (draw-gobble ctx)
+  (when (< gobble-t 1)
+        (ctx.beginPath)
+        (ctx.arc gobble-x gobble-y
+                 (* (- 1 gobble-t) 100)
+                 0 (* Math.PI 2) true)
+        (ctx.closePath)
+        (let ((grd (ctx.createRadialGradient
+                    gobble-x gobble-y (* (- 1 gobble-t) 50)
+                    gobble-x gobble-y (* (- 1 gobble-t) 100))))
+          (grd.addColorStop 0 (string-append "rgba(0, 0, 255, " a ")"))
+          (grd.addColorStop 1 (string-append "rgba(0, 0, 255, 0.0)"))
+          (set! ctx.fillStyle grd)
+          (ctx.fill))
+        (set! gobble-t (+ gobble-t 0.2))))
+
+
+(define (clamp v min max)
+  (cond
+   ((< v min) min)
+   ((> v max) max)
+   (else v)))
+
+(define flash 0)
+(define energy 50)
 
 (define (nightjar-intro c)
   (game-modify-mouse-hook
    (lambda (e c)
+     (define found 0)
      (set! butterfly-state
            (filter
             (lambda (b)
               (let ((pos (butterfly-screen-pos b)))
-                (> (vdist (vector (game-mx c) (game-my c) 0) pos) 50)))
+                (cond ((and (zero? found)
+                            (< (vdist (vector (game-mx c) (game-my c) 0) pos) 50))
+                       (make-gobble (vx pos) (vy pos))
+                       (set! energy (+ energy 5))
+                       (set! flash 255)
+                       (set! found 1)
+                       #f) (else #t))))
             butterfly-state))
      c)
    (game-modify-render
     (lambda (ctx)
-      (set! ctx.fill "#fff")
+      (set! flash (* flash 0.9))
+      (set! energy (clamp (- energy 0.05) 0 100))
+
+      (draw-pie ctx 70 700 10 100 255 0 0)
+      (draw-pie ctx 1100 700 energy 100
+                0 220 120)
+
+      (when (> flash 10)
+            (draw-flash ctx 1100 700
+                        200
+                        127 255 200 (/ flash 255)))
+
       (set! ctx.strokeStyle "#fff")
+
 
       ;;(for-each
       ;; (lambda (b)
@@ -129,10 +219,15 @@ void main() {
       ;;     (ctx.stroke)))
       ;; butterfly-state)
 
+      (set! ctx.fillStyle "#fff")
+      (set! ctx.font "normal 10pt gnuolane")
 
       (wrap-text ctx
                  (string-append "Num butterflies: " (length butterfly-state))
-                 -470 100 1000 1000))
+                 -470 100 1000 1000)
+
+      (draw-gobble ctx)
+      )
     (game-modify-buttons
      (list
       (image-button
