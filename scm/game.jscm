@@ -158,10 +158,10 @@ void main() {
                  0 (* Math.PI 2) true)
         (ctx.closePath)
         (let ((grd (ctx.createRadialGradient
-                    gobble-x gobble-y (* (- 1 gobble-t) 50)
+                    gobble-x gobble-y (* (- 1 gobble-t) 10)
                     gobble-x gobble-y (* (- 1 gobble-t) 100))))
-          (grd.addColorStop 0 (string-append "rgba(0, 0, 255, " a ")"))
-          (grd.addColorStop 1 (string-append "rgba(0, 0, 255, 0.0)"))
+          (grd.addColorStop 0 (string-append "rgba(0, 155, 0, " a ")"))
+          (grd.addColorStop 1 (string-append "rgba(255, 255, 0, 0.0)"))
           (set! ctx.fillStyle grd)
           (ctx.fill))
         (set! gobble-t (+ gobble-t 0.2))))
