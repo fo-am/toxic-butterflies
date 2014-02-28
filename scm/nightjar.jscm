@@ -590,7 +590,7 @@
 
 (define (make-new-game)
   (list 0 (lambda (ctx) 0) (lambda (t c) c)
-        () () 0 0 () (list 0 0) (lambda (e c) c)))
+        () () 0 0 () (list 0 0) (lambda (e c) c) 0))
 
 (define (game-time g) (list-ref g 0))
 (define (game-modify-time v g) (list-replace g 0 v))
@@ -612,6 +612,8 @@
 (define (game-modify-world-offset g v) (list-replace g 8 v))
 (define (game-mouse-hook g) (list-ref g 9))
 (define (game-modify-mouse-hook v g) (list-replace g 9 v))
+(define (game-time-delta g) (list-ref g 10))
+(define (game-modify-time-delta v g) (list-replace g 10 v))
 
 (define (game-modify-mouse g x y)
   (game-modify-mx
@@ -642,8 +644,10 @@
 
 (define (top-update-game t game)
   (let ((fn (game-update game)))
-    (set! game (game-modify-time
-                t (fn t game)))))
+    (set! game
+          (fn t (game-modify-time
+                 t (game-modify-time-delta
+                    (* (- t (game-time game)) 0.0001) game))))))
 
 (define (top-render-game ctx game)
   (let ((fn (game-render game)))
