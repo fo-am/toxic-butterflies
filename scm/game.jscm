@@ -35,9 +35,9 @@
     (butterfly-state-modify-pos
      (butterfly-state-modify-dir
       s
-      (vector (+ (* (vx dir) (cos a)) (* (vz dir) (- 0 (sin a))))
-              0
-              (+ (* (vx dir) (sin a)) (* (vz dir) (cos a)))))
+      (vector (+ (* (vx dir) (cos a)) (* (vy dir) (- 0 (sin a))))
+              (+ (* (vx dir) (sin a)) (* (vy dir) (cos a)))
+              0))
      (vadd (butterfly-state-pos s)
            (vmul dir 0.05))))))
 
@@ -51,7 +51,7 @@
   (with-state
    (texture (list-ref test-tex (butterfly-state-texture s)))
    (translate (butterfly-state-pos s))
-   (maim (vnormalise (butterfly-state-dir s)) (vector 0 1 0))
+   (maim (vnormalise (butterfly-state-dir s)) (vector 0 0 1))
    (rotate (vector 0 90 90))
    (scale (vector 0.5 0.5 0.5))
    (draw-obj 4)
