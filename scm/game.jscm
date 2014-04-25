@@ -40,14 +40,15 @@
    ))
 
 (define (expr-to-number expr)
-  (+ 1 (parseInt
-        (string-append
-         (if (eq? (list-ref expr 0) "dennis-patch-on") "0" "1")
-         (if (eq? (list-ref expr 1) "hw-rays-on") "0" "1")
-         (if (eq? (list-ref expr 2) "red-fw-band-on") "0" "1")
-         (if (eq? (list-ref expr 3) "yellow-fw-band-on") "0" "1")
-         (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
-        2)))
+  (dbg
+   (parseInt
+    (string-append
+     (if (eq? (list-ref expr 0) "dennis-patch-on") "0" "1")
+     (if (eq? (list-ref expr 1) "hw-rays-on") "0" "1")
+     (if (eq? (list-ref expr 2) "red-fw-band-on") "0" "1")
+     (if (eq? (list-ref expr 3) "yellow-fw-band-on") "0" "1")
+     (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
+    2)))
 
 (define butterfly-list (build-list 30 (lambda (i) (butterfly (chromosome-express chromo)))))
 (define test-tex (build-list 32 (lambda (i) (load-texture (+ "patterns/" (+ i 1) ".png")))))
