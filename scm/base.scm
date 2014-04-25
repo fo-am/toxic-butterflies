@@ -200,6 +200,8 @@
     (when (not (list-equal? (cons 1 (list 2 3)) (list 1 2 3))) (display "cons failed"))
     (when (not (eq? (foldl (lambda (a r) (+ a r)) 0 (list 1 2 1 1)) 5))
           (display "fold failed"))
+;    (when (not (eq? (foldl (lambda (a b r) (+ a b r)) 0 (list 1 2 1 1) (list 2 4 5 5)) 19))
+;          (display "fold multiple failed"))
     (when (not (list-equal? (map (lambda (i) (+ i 1)) (list 1 2 3 4)) (list 2 3 4 5)))
           (display "map failed"))
     (when (not (eq? (let ((a 1) (b 2) (c 3)) (+ a b c)) 6)) (display "let failed"))

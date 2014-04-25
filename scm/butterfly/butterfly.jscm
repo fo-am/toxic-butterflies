@@ -1,0 +1,63 @@
+;; -*- mode: scheme; -*-
+
+(define (butterfly expr)
+  (list
+   (vmul (crndvec) 15) ;; pos
+   (vnormalise (crndvec)) ;; dir
+   (rndf) ;; fuzz
+   (expr-to-number expr)
+   expr)) ;; texture
+
+(define (butterfly-pos s) (list-ref s 0))
+(define (butterfly-modify-pos s v) (list-replace s 0 v))
+(define (butterfly-dir s) (list-ref s 1))
+(define (butterfly-modify-dir s v) (list-replace s 1 v))
+(define (butterfly-fuzz s) (list-ref s 2))
+(define (butterfly-texture s) (list-ref s 3))
+(define (butterfly-expr s) (list-ref s 4))
+
+(define (butterfly-screen-pos s)
+  (project-point (butterfly-pos s)))
+
+(define (update-butterfly s)
+  (let ((a 0.03))
+  (let ((dir (butterfly-dir s)))
+    (butterfly-modify-pos
+     (butterfly-modify-dir
+      s
+      (vector (+ (* (vx dir) (cos a)) (* (vy dir) (- 0 (sin a))))
+              (+ (* (vx dir) (sin a)) (* (vy dir) (cos a)))
+              0))
+     (vadd (butterfly-pos s)
+           (vmul dir 0.05))))))
+
+(define (update-butterflies b)
+  (map
+   (lambda (b)
+     (update-butterfly b))
+   b))
+
+(define (render-butterfly s)
+  (with-state
+   (texture (list-ref test-tex (butterfly-texture s)))
+   (translate (butterfly-pos s))
+   (maim (vnormalise (butterfly-dir s)) (vector 0 0 1))
+   (rotate (vector 0 90 90))
+   (scale (vector 0.5 0.5 0.5))
+   (draw-obj 4)
+   (with-state
+    (rotate (vector 180 0 0))
+    (translate (vector 0 0 -0.5))
+    (let ((a (* 90 (sin (* 10 (+ (butterfly-fuzz s) (time)))))))
+      (with-state
+       (rotate (vector 0 0 a))
+       (draw-obj 3))
+      (with-state
+       (rotate (vector 0 0 (- 0 a)))
+       (draw-obj 3))))))
+
+(define (render-butterflies s)
+  (for-each
+   (lambda (p)
+     (render-butterfly p))
+   s))

@@ -1,0 +1,56 @@
+;; -*- mode: scheme; -*-
+
+(define (allele id probability)
+  (list id probability))
+
+(define (allele-id a) (list-ref a 0))
+(define (allele-probability a) (list-ref a 1))
+(define (allele-modify-probability a v) (list-replace a 1 v))
+
+;; a gene is simply a list of alleles
+
+(define (gene-cumulative gene)
+  (foldl (lambda (a b) (+ a b)) 0 (map (lambda (a) (cadr a)) gene)))
+
+(define (gene-normalise gene)
+  (let ((total (gene-cumulative gene)))
+    (map (lambda (allele)
+           (allele-modify-probability
+            allele
+            (/ (allele-probability allele) total)))
+         gene)))
+
+(define (gene-express gene)
+  (let ((v (rndf)))
+    (car
+     (cadr
+      (foldl
+       (lambda (allele r)
+         (let ((segment (+ (car r) (allele-probability allele))))
+           (if (and (not (cadr r))
+                    (< v segment))
+               (list segment allele)
+               (list segment (cadr r)))))
+       (list 0 #f)
+       gene)))))
+
+(define (gene-remove-expression gene expr)
+  (gene-normalise
+   (map
+    (lambda (allele)
+      (if (eq? (allele-id allele) expr)
+          (allele-modify-probability
+           allele
+           (max 0 (- (allele-probability allele) 0.05)))
+          allele))
+    gene)))
+
+;; a chromosome is simple a list of genes
+
+(define (chromosome-express chromo)
+  (map gene-express chromo))
+
+;; an expression is a list of allele ids
+
+(define (chromosome-remove-expression chromo expr)
+  (map2 gene-remove-expression chromo expr))

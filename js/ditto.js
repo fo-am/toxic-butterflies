@@ -253,9 +253,17 @@ ditto.comp_when = function(args) {
         "return ("+ditto.comp_lambda([[]].concat(ditto.cdr(args)))+")() }})()";
 };
 
-ditto.foldl_helper = function(fn,val,src) {
+ditto.foldl_helper = function(args) {
+    var fn=args[0];
+    var val=args[1];
+    var src=args[2];
     for (var i=0; i<src.length; i++) {
-        val=fn(src[i],val);
+        slice = []
+        for(var j=2; j<args.length; j++) {
+            slice.push(args[j][i]);
+        }
+        slice.push(val);
+        val=fn.apply(this,slice);
     }
     return val;
 };
@@ -321,11 +329,12 @@ ditto.core_forms = function(fn, args) {
     // todo - make general for multiple lists as input
     // iterative fold version for optimisation
     if (fn == "foldl") {
-        if (ditto.check(fn,args,3,3)) {
-            return "ditto.foldl_helper("+ditto.comp(ditto.car(args))+","+
-                ditto.comp(ditto.cadr(args))+","+
-                ditto.comp(ditto.caddr(args))+")";
-        }
+        return "ditto.foldl_helper(["+ditto.list_map(ditto.comp,args).join(",")+"])";
+
+        //["+
+        //    ditto.comp(ditto.car(args))+","+
+        //    ditto.comp(ditto.cadr(args))+","+
+        //    ditto.comp(ditto.caddr(args))+"])";
     }
 
     if (fn == "list_q") {
@@ -451,6 +460,12 @@ ditto.core_forms = function(fn, args) {
         return debug+"new "+ditto.car(args)+"( "+ditto.comp(ditto.cadr(args))+")";
     }
 
+    if (fn == "load") {
+        var v=ditto.comp(ditto.car(args));
+        console.log("loading "+v);
+        return ditto.load(v.substring(1,v.length-1));
+    }
+
     return false;
 };
 
@@ -475,7 +490,7 @@ ditto.is_number = function(str) {
 };
 
 ditto.comp = function(f) {
-//    console.log(f);
+    //    console.log(f);
     try {
         // string, number or list?
         if (typeof f == "string") return f;
@@ -590,8 +605,6 @@ function init(filenames) {
         }
     });
 }
-
-
 
 /**
  * Provides requestAnimationFrame in a cross browser way.

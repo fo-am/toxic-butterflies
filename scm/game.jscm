@@ -16,82 +16,53 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (new-butterfly-state pos dir)
-  (list pos dir (rndf) (random 32)))
+(load "scm/butterfly/chromosome.jscm")
+(load "scm/butterfly/gui.jscm")
+(load "scm/butterfly/butterfly.jscm")
 
-(define (butterfly-state-pos s) (list-ref s 0))
-(define (butterfly-state-modify-pos s v) (list-replace s 0 v))
-(define (butterfly-state-dir s) (list-ref s 1))
-(define (butterfly-state-modify-dir s v) (list-replace s 1 v))
-(define (butterfly-state-fuzz s) (list-ref s 2))
-(define (butterfly-state-texture s) (list-ref s 3))
+(define chromo
+  (list
+   (gene-normalise
+    (list (allele "dennis-patch-on" 0.5)
+          (allele "dennis-patch-off" 0.5)))
+   (gene-normalise
+    (list (allele "hw-rays-on" 0.5)
+          (allele "hw-rays-off" 0.5)))
+   (gene-normalise
+    (list (allele "red-fw-band-on" 0.5)
+          (allele "red-fw-band-off" 0.5)))
+   (gene-normalise
+    (list (allele "yellow-fw-band-on" 0.5)
+          (allele "yellow-fw-band-off" 0.5)))
+   (gene-normalise
+    (list (allele "yellow-hw-bar-on" 0.5)
+          (allele "yellow-hw-bar-off" 0.5)))
+   ))
 
-(define (butterfly-screen-pos s)
-  (project-point (butterfly-state-pos s)))
+(define (expr-to-number expr)
+  (+ 1 (parseInt
+        (string-append
+         (if (eq? (list-ref expr 0) "dennis-patch-on") "0" "1")
+         (if (eq? (list-ref expr 1) "hw-rays-on") "0" "1")
+         (if (eq? (list-ref expr 2) "red-fw-band-on") "0" "1")
+         (if (eq? (list-ref expr 3) "yellow-fw-band-on") "0" "1")
+         (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
+        2)))
 
-(define (update-butterfly-state s)
-  (let ((a 0.03))
-  (let ((dir (butterfly-state-dir s)))
-    (butterfly-state-modify-pos
-     (butterfly-state-modify-dir
-      s
-      (vector (+ (* (vx dir) (cos a)) (* (vy dir) (- 0 (sin a))))
-              (+ (* (vx dir) (sin a)) (* (vy dir) (cos a)))
-              0))
-     (vadd (butterfly-state-pos s)
-           (vmul dir 0.05))))))
-
-(define (update-butterflies b)
-  (map
-   (lambda (b)
-     (update-butterfly-state b))
-   b))
-
-(define (render-butterfly s)
-  (with-state
-   (texture (list-ref test-tex (butterfly-state-texture s)))
-   (translate (butterfly-state-pos s))
-   (maim (vnormalise (butterfly-state-dir s)) (vector 0 0 1))
-   (rotate (vector 0 90 90))
-   (scale (vector 0.5 0.5 0.5))
-   (draw-obj 4)
-   (with-state
-    (rotate (vector 180 0 0))
-    (translate (vector 0 0 -0.5))
-    (let ((a (* 90 (sin (* 10 (+ (butterfly-state-fuzz s) (time)))))))
-      (with-state
-       (rotate (vector 0 0 a))
-       (draw-obj 3))
-      (with-state
-       (rotate (vector 0 0 (- 0 a)))
-       (draw-obj 3))))))
-
-(define (render-butterflies s)
-  (for-each
-   (lambda (p)
-     (render-butterfly p))
-   s))
-
-(define (new-butterfly)
-  (new-butterfly-state (vmul (crndvec) 15) (vnormalise (crndvec))))
-
-(define butterfly-state
-  (build-list
-   20
-   (lambda (i) (new-butterfly))))
-
+(define butterfly-list (build-list 20 (lambda (i) (butterfly (chromosome-express chromo)))))
 (define test-tex (build-list 32 (lambda (i) (load-texture (+ "patterns/" (+ i 1) ".png")))))
 (define bg-tex (load-texture "bg.png"))
 
 (define (render)
-  (set! butterfly-state (update-butterflies butterfly-state))
-  (render-butterflies butterfly-state)
+  (set! butterfly-list (update-butterflies butterfly-list))
+  (render-butterflies butterfly-list)
   (with-state
    (texture bg-tex)
    (translate (vector 0 0 -100))
    (scale (vector 100 100 100))
    (draw-cube)))
 
+;; set the one shader
 (shader blinn-vertex-shader
 "
 precision mediump float;
@@ -106,70 +77,6 @@ void main() {
 }
 ")
 
-
-(define (stroke-pie ctx x y time max-time)
-  (ctx.beginPath)
-  (ctx.moveTo x y)
-  (ctx.arc
-   x y 50 (+ (* Math.PI -0.5)
-             (/ (* time Math.PI 2) max-time))
-   (* Math.PI -0.5)
-   true)
-  (ctx.closePath))
-
-(define (draw-pie ctx x y time max-time r g b)
-  (stroke-pie ctx (+ x 3) (+ y 3) max-time max-time)
-  (set! ctx.fillStyle "#000")
-  (ctx.fill)
-
-  (stroke-pie ctx x y time max-time)
-  (set! ctx.fillStyle (string-append "rgba(" (Math.floor r) ", "
-                                     (Math.floor g) ", "
-                                     (Math.floor b) ", 1.0)"))
-  (ctx.fill)
-
-  (set! ctx.lineWidth 1)
-  (set! ctx.fillStyle "#fff")
-  (set! ctx.font "normal 30pt gnuolane")
-  (ctx.fillText (Math.floor time) x (+ y 20))
-  )
-
-(define (draw-flash ctx x y rad r g b a)
-  (ctx.beginPath)
-  (ctx.arc x y rad 0 (* Math.PI 2) true)
-  (ctx.closePath)
-  (let ((grd (ctx.createRadialGradient x y 50 x y 100)))
-    (grd.addColorStop 0 (string-append "rgba(0, 255, 0, " a ")"))
-    (grd.addColorStop 1 (string-append "rgba(255, 255, 0, 0.0)"))
-    (set! ctx.fillStyle grd)
-    (ctx.fill)))
-
-(define (make-gobble x y)
-  (set! gobble-x x)
-  (set! gobble-y y)
-  (set! gobble-t 0))
-
-(define gobble-x 0)
-(define gobble-y 0)
-(define gobble-t 1)
-
-(define (draw-gobble ctx)
-  (when (< gobble-t 1)
-        (ctx.beginPath)
-        (ctx.arc gobble-x gobble-y
-                 (* (- 1 gobble-t) 100)
-                 0 (* Math.PI 2) true)
-        (ctx.closePath)
-        (let ((grd (ctx.createRadialGradient
-                    gobble-x gobble-y (* (- 1 gobble-t) 10)
-                    gobble-x gobble-y (* (- 1 gobble-t) 100))))
-          (grd.addColorStop 0 (string-append "rgba(0, 155, 0, " a ")"))
-          (grd.addColorStop 1 (string-append "rgba(255, 255, 0, 0.0)"))
-          (set! ctx.fillStyle grd)
-          (ctx.fill))
-        (set! gobble-t (+ gobble-t 0.2))))
-
-
 (define (clamp v min max)
   (cond
    ((< v min) min)
@@ -183,7 +90,7 @@ void main() {
   (game-modify-mouse-hook
    (lambda (e c)
      (define found 0)
-     (set! butterfly-state
+     (set! butterfly-list
            (filter
             (lambda (b)
               (let ((pos (butterfly-screen-pos b)))
@@ -193,26 +100,32 @@ void main() {
                        (set! energy (+ energy 5))
                        (set! flash 255)
                        (set! found 1)
+                       (set! chromo (chromosome-remove-expression chromo (butterfly-expr b)))
                        #f) (else #t))))
-            butterfly-state))
+            butterfly-list))
      c)
    (game-modify-render
     (lambda (ctx)
-      (set! flash (* flash 0.9))
 
+      (when (< (length butterfly-list) 20)
+            (set! butterfly-list
+                  (cons (butterfly (chromosome-express chromo))
+                        butterfly-list)))
+
+      (set! flash (* flash 0.9))
       (set! energy (clamp (- energy (* 10 (game-time-delta c))) 0 100))
 
       (draw-pie ctx 70 700 10 100 255 0 0)
-      (draw-pie ctx 1100 700 energy 100
-                0 220 120)
+      (draw-pie ctx 1100 700 energy 100 0 220 120)
 
       (when (> flash 10)
             (draw-flash ctx 1100 700
                         200
                         127 255 200 (/ flash 255)))
 
-      (set! ctx.strokeStyle "#fff")
+      (draw-chromosome ctx 50 50 chromo)
 
+      (set! ctx.strokeStyle "#fff")
 
       ;;(for-each
       ;; (lambda (b)
@@ -221,30 +134,30 @@ void main() {
       ;;     (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
       ;;     (ctx.closePath)
       ;;     (ctx.stroke)))
-      ;; butterfly-state)
+      ;; butterfly)
 
       (set! ctx.fillStyle "#fff")
       (set! ctx.font "normal 10pt gnuolane")
 
-      (wrap-text ctx
-                 (string-append "Num butterflies: " (length butterfly-state))
-                 -470 100 1000 1000)
+ ;     (wrap-text ctx
+ ;                (string-append "Num butterflies: " (length butterfly-list))
+ ;                -470 100 1000 1000)
 
       (draw-gobble ctx)
       )
     (game-modify-buttons
      (list
-      (image-button
-       "" 80 100 "none" (find-image "plus.png")
-       (lambda (c)
-         (set! butterfly-state (cons (new-butterfly) butterfly-state))
-         c))
+;      (image-button
+;       "" 80 100 "none" (find-image "plus.png")
+;       (lambda (c)
+;         (set! butterfly-list (cons (butterfly) butterfly-list))
+;         c))
 
-      (image-button
-       "" 50 100 "none" (find-image "minus.png")
-       (lambda (c)
-         (set! butterfly-state (cdr butterfly-state))
-         c))
+;      (image-button
+;       "" 50 100 "none" (find-image "minus.png")
+;       (lambda (c)
+;         (set! butterfly-list (cdr butterfly-list))
+;         c))
 
 
       )
