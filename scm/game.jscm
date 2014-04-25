@@ -49,7 +49,7 @@
          (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
         2)))
 
-(define butterfly-list (build-list 20 (lambda (i) (butterfly (chromosome-express chromo)))))
+(define butterfly-list (build-list 30 (lambda (i) (butterfly (chromosome-express chromo)))))
 (define test-tex (build-list 32 (lambda (i) (load-texture (+ "patterns/" (+ i 1) ".png")))))
 (define bg-tex (load-texture "bg.png"))
 
@@ -107,7 +107,7 @@ void main() {
    (game-modify-render
     (lambda (ctx)
 
-      (when (< (length butterfly-list) 20)
+      (when (< (length butterfly-list) 30)
             (set! butterfly-list
                   (cons (butterfly (chromosome-express chromo))
                         butterfly-list)))
