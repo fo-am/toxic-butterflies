@@ -226,6 +226,7 @@ void main() {
 
 
       (draw-chromosome ctx 50 50 chromo)
+      (draw-expr ctx 50 350 toxic-expr)
 
       (set! ctx.strokeStyle "#fff")
 

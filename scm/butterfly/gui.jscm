@@ -41,6 +41,28 @@
    chromo)
   )
 
+(define (draw-expr ctx x y expr)
+  (msg expr)
+  (index-for-each
+   (lambda (i e)
+     (set! ctx.fillStyle "#fff")
+     (set! ctx.font "normal 10pt gnuolane")
+     (ctx.fillText e x (+ y (- (* i 40) 10)))
+     (set! ctx.fillStyle "#000")
+     (ctx.fillRect x (+ y (* i 40)) 100 10)
+     (set! ctx.fillStyle "#f00")
+     (ctx.fillRect x (+ y (* i 40)) (cond
+                                     ((eq? e "dennis-patch-on") 100)
+                                     ((eq? e "hw-rays-on") 100)
+                                     ((eq? e "red-fw-band-on") 100)
+                                     ((eq? e "yellow-fw-band-on") 100)
+                                     ((eq? e "yellow-hw-bar-on") 100)
+                                     (else 0)) 10)
+     )
+   expr)
+  )
+
+
 (define (draw-flash ctx x y rad r g b a)
   (ctx.beginPath)
   (ctx.arc x y rad 0 (* Math.PI 2) true)
