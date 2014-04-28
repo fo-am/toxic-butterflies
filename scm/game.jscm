@@ -66,34 +66,47 @@
 (define toxic-index 1)
 
 (define (detect-hits butterfly-list c fn)
-  (define found 0)
-  (filter
-   (lambda (b)
-     (let ((pos (butterfly-screen-pos b)))
-       (msg (vdist (vector (game-mx c) (game-my c) 0) pos))
-       (cond ((and (zero? found)
-                   (< (vdist (vector (game-mx c) (game-my c) 0) pos) 50))
-              (fn b pos)
-              #f) (else #t))))
-   butterfly-list))
+  ;; find closest index
+  (let ((closest
+         (index-foldl
+          (lambda (i b r)
+            (let ((pos (butterfly-screen-pos b)))
+              (let ((dist (vdist (vector (game-mx c) (game-my c) 0) pos)))
+                (if (< dist (car r))
+                    (list dist i pos b) r))))
+          (list 999999 -1 0 0)
+          butterfly-list)))
+    ;; if less than hit dist
+    (cond
+     ((< (car closest) 50)
+      ;; remove it
+      (fn (list-ref closest 3) (list-ref closest 2))
+      (list #t (delete-n butterfly-list (cadr closest))))
+     (else (list #f butterfly-list)))))
+
 
 (define (detect-hits-butterflies butterfly-list c)
-  (list
-   (detect-hits (list-ref butterfly-list 0) c
-                (lambda (b pos)
-                  (make-gobble (vx pos) (vy pos) 0 255 0)
-                  (set! energy (+ energy 5))
-                  (set! flash 255)
-                  (set! found 1)
-                  (set! chromo (chromosome-remove-expression chromo (butterfly-expr b))))
-                )
-   (detect-hits (list-ref butterfly-list 1) c
+  (let ((edible (detect-hits
+                 (list-ref butterfly-list 0) c
+                 (lambda (b pos)
+                   (make-gobble (vx pos) (vy pos) 0 255 0)
+                   (set! energy (+ energy 5))
+                   (set! flash 255)
+                   (set! found 1)
+                   (set! chromo (chromosome-remove-expression chromo (butterfly-expr b))))
+                 )))
+    (if (car edible) ;; edible hit detected
+        (list (cadr edible) (list-ref butterfly-list 1))
+        (list (list-ref butterfly-list 0)
+              (cadr
+               (detect-hits ;; search for toxic hits
+                (list-ref butterfly-list 1) c
                 (lambda (b pos)
                   (make-gobble (vx pos) (vy pos) 255 0 0)
                   (set! energy (- energy 5))
                   (set! toxic (+ toxic 5))
                   (set! toxic-flash 255)
-                  (set! found 1)))))
+                  (set! found 1))))))))
 
 (define (replenish butterfly-list fn)
   (if (< (length butterfly-list) pop-size)
@@ -152,7 +165,8 @@ void main() {
 (define (nightjar-intro c)
   (game-modify-mouse-hook
    (lambda (e c)
-     (set! butterfly-list (detect-hits-butterflies butterfly-list c))
+     (when (eq? e "down")
+           (set! butterfly-list (detect-hits-butterflies butterfly-list c)))
      c)
    (game-modify-render
     (lambda (ctx)

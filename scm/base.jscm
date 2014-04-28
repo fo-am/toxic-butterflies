@@ -71,6 +71,17 @@
 
 ;; index versions provide count for first argument
 
+(define index-foldl
+  (lambda (fn s l)
+    (cadr (foldl
+           (lambda (e r)
+             (list
+              (+ (car r) 1)
+              (fn (car r) e (cadr r))))
+           (list 0 s)
+           l))))
+
+
 (define index-map
   (lambda (fn l)
     (cadr (foldl

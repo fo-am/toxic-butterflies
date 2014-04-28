@@ -634,11 +634,13 @@
     (- my (game-my g)) g) mx my))
 
 (define (game-mouse-up g mx my)
-  (game-modify-mouse
-   (draggables-update
-    "up" mx my
-    (- mx (game-mx g))
-    (- my (game-my g)) g) mx my))
+  (let ((fn (game-mouse-hook g)))
+    (fn "up"
+        (game-modify-mouse
+         (draggables-update
+          "up" mx my
+          (- mx (game-mx g))
+          (- my (game-my g)) g) mx my))))
 
 ;; ----------------------------------------
 
