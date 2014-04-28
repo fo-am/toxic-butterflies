@@ -92,7 +92,7 @@
       (gl.uniform3fv shader.AmbientColour (vector 0 0 0))
       (gl.uniform3fv shader.DiffuseColour colour)
       (gl.uniform3fv shader.SpecularColour (vector 0 0 0))
-      (gl.uniform3fv shader.LightPos (vector 0 0 0))
+      (gl.uniform3fv shader.LightPos (vector 2 400 -100))
       (gl.uniform1f shader.Roughness 1)
 
       (gl.uniformMatrix4fv shader.ViewMatrixUniform false view)

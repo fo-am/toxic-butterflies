@@ -133,7 +133,33 @@
    (draw-cube)))
 
 ;; set the one shader
-(shader blinn-vertex-shader
+(shader
+"
+precision mediump float;
+uniform vec3 LightPos;
+varying vec3 N;
+varying vec3 P;
+varying vec3 V;
+varying vec3 L;
+varying vec3 T;
+uniform mat4 ViewMatrix;
+uniform mat4 CameraMatrix;
+uniform mat4 LocalMatrix;
+uniform mat4 NormalMatrix;
+attribute vec3 p;
+attribute vec3 n;
+attribute vec3 t;
+void main()
+{
+    mat4 ModelViewMatrix = ViewMatrix * CameraMatrix * LocalMatrix;
+    N = vec3(ModelViewMatrix*vec4(normalize(n),0.0));
+    P = p.xyz;
+    T = t;
+    V = -vec3(ModelViewMatrix*vec4(p,1.0));
+    L = vec3(ModelViewMatrix*vec4((LightPos-p),1));
+    gl_Position = ModelViewMatrix * vec4(p,1);
+}"
+
 "
 precision mediump float;
 varying vec3 N;
@@ -143,15 +169,22 @@ varying vec3 L;
 varying vec3 T;
 uniform sampler2D texture;
 void main() {
+ /*vec3 l=normalize(L);
+ vec3 n=normalize(N);*/
  gl_FragColor = texture2D(texture,vec2(T.s,T.t));
+
+/* float lv=max(0.0,min(1.0,dot(l,n)));
+
+ gl_FragColor = vec4(texture2D(texture,vec2(T.s,T.t)).xyz*lv,1.0);
+ gl_FragColor = vec4(lv,lv,lv,1.0);*/
+
 }
 ")
 
 (define (clamp v min max)
   (cond
    ((< v min) min)
-   ((> v max) max)
-   (else v)))
+   ((> v max) max)   (else v)))
 
 (define flash 0)
 (define toxic-flash 0)

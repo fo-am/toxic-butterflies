@@ -34,19 +34,19 @@
        (list 0 #f)
        gene)))))
 
-(define (gene-remove-expression gene expr)
+(define (gene-remove-expression gene genome)
   (gene-normalise
    (map
     (lambda (allele)
-      (if (eq? (allele-id allele) expr)
+      (if (eq? (allele-id allele) genome)
           (allele-modify-probability
            allele
-           (max 0 (- (allele-probability allele) 0.05)))
+           (max 0 (- (allele-probability allele) 0.1)))
           allele))
     gene)))
 
 ;; a chromosome is simple a list of genes
-
+;; returns a genome
 (define (chromosome-express chromo)
   (map gene-express chromo))
 
