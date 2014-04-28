@@ -50,13 +50,69 @@
      (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
     2)))
 
-(define butterfly-list (build-list 30 (lambda (i) (butterfly (chromosome-express chromo)))))
+(define toxic-expr (chromosome-express chromo))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; population stuff
+
+(define pop-size 10)
+
+(define butterfly-list
+  (list
+   (build-list pop-size (lambda (i) (butterfly (chromosome-express chromo))))
+   (build-list pop-size (lambda (i) (butterfly toxic-expr)))))
+
+(define edible-index 0)
+(define toxic-index 1)
+
+(define (detect-hits butterfly-list c fn)
+  (define found 0)
+  (filter
+   (lambda (b)
+     (let ((pos (butterfly-screen-pos b)))
+       (msg (vdist (vector (game-mx c) (game-my c) 0) pos))
+       (cond ((and (zero? found)
+                   (< (vdist (vector (game-mx c) (game-my c) 0) pos) 50))
+              (fn b pos)
+              #f) (else #t))))
+   butterfly-list))
+
+(define (detect-hits-butterflies butterfly-list c)
+  (list
+   (detect-hits (list-ref butterfly-list 0) c
+                (lambda (b pos)
+                  (make-gobble (vx pos) (vy pos) 0 255 0)
+                  (set! energy (+ energy 5))
+                  (set! flash 255)
+                  (set! found 1)
+                  (set! chromo (chromosome-remove-expression chromo (butterfly-expr b))))
+                )
+   (detect-hits (list-ref butterfly-list 1) c
+                (lambda (b pos)
+                  (make-gobble (vx pos) (vy pos) 255 0 0)
+                  (set! energy (- energy 5))
+                  (set! toxic (+ toxic 5))
+                  (set! toxic-flash 255)
+                  (set! found 1)))))
+
+(define (replenish butterfly-list fn)
+  (if (< (length butterfly-list) pop-size)
+      (cons (butterfly (fn)) butterfly-list)
+      butterfly-list))
+
+(define (replenish-butterflies butterfly-list)
+  (list
+   (replenish (list-ref butterfly-list 0) (lambda () (chromosome-express chromo)))
+   (replenish (list-ref butterfly-list 1) (lambda () toxic-expr))))
+
+
 (define test-tex (build-list 32 (lambda (i) (load-texture (+ "patterns/" (+ i 1) ".png")))))
 (define bg-tex (load-texture "bg.png"))
 
 (define (render)
-  (set! butterfly-list (update-butterflies butterfly-list))
-  (render-butterflies butterfly-list)
+  (set! butterfly-list (map update-butterflies butterfly-list))
+  (for-each render-butterflies butterfly-list)
+
   (with-state
    (texture bg-tex)
    (translate (vector 0 0 -100))
@@ -85,57 +141,64 @@ void main() {
    (else v)))
 
 (define flash 0)
+(define toxic-flash 0)
+
 (define energy 50)
+(define toxic 0)
+
+(define hint-dur 100)
+(define hint-time 100)
 
 (define (nightjar-intro c)
   (game-modify-mouse-hook
    (lambda (e c)
-     (define found 0)
-     (set! butterfly-list
-           (filter
-            (lambda (b)
-              (let ((pos (butterfly-screen-pos b)))
-                (cond ((and (zero? found)
-                            (< (vdist (vector (game-mx c) (game-my c) 0) pos) 50))
-                       (make-gobble (vx pos) (vy pos))
-                       (set! energy (+ energy 5))
-                       (set! flash 255)
-                       (set! found 1)
-                       (set! chromo (chromosome-remove-expression chromo (butterfly-expr b)))
-                       #f) (else #t))))
-            butterfly-list))
+     (set! butterfly-list (detect-hits-butterflies butterfly-list c))
      c)
    (game-modify-render
     (lambda (ctx)
 
-      (when (< (length butterfly-list) 30)
-            (set! butterfly-list
-                  (cons (butterfly (chromosome-express chromo))
-                        butterfly-list)))
+      (set! butterfly-list (replenish-butterflies butterfly-list))
 
       (set! flash (* flash 0.9))
+      (set! toxic-flash (* toxic-flash 0.9))
       (set! energy (clamp (- energy (* 10 (game-time-delta c))) 0 100))
+      (set! hint-time (+ hint-time 0.1))
 
-      (draw-pie ctx 70 700 10 100 255 0 0)
+      (draw-pie ctx 70 700 toxic 100 255 0 0)
       (draw-pie ctx 1100 700 energy 100 0 220 120)
 
       (when (> flash 10)
             (draw-flash ctx 1100 700
                         200
-                        127 255 200 (/ flash 255)))
+                        0 255 0 (/ flash 255)))
+
+      (when (> toxic-flash 10)
+            (draw-flash ctx 70 700
+                        200
+                        255 127 200 (/ toxic-flash 255)))
+
 
       (draw-chromosome ctx 50 50 chromo)
 
       (set! ctx.strokeStyle "#fff")
 
-      ;;(for-each
-      ;; (lambda (b)
-      ;;   (let ((pos (butterfly-screen-pos b)))
-      ;;     (ctx.beginPath)
-      ;;     (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
-      ;;     (ctx.closePath)
-      ;;     (ctx.stroke)))
-      ;; butterfly)
+      (when (> hint-time hint-dur)
+            (when (< (modulo hint-time 2) 1)
+                  (for-each
+                   (lambda (b)
+                     (let ((pos (butterfly-screen-pos b)))
+                       (set! ctx.strokeStyle "#f00")
+                       (set! ctx.fillStyle "#f00")
+                       (set! ctx.lineWidth 5)
+                       (ctx.beginPath)
+                       (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
+                       (ctx.closePath)
+                       (ctx.stroke)
+                       (set! ctx.font "normal 40pt gnuolane")
+                       (ctx.fillText "TOXIC!!" (- (vx pos) 100) (- (vy pos) 20))
+                       ))
+                   (list-ref butterfly-list toxic-index)))
+            (when (> hint-time (+ hint-dur 20)) (set! hint-time 0)))
 
       (set! ctx.fillStyle "#fff")
       (set! ctx.font "normal 10pt gnuolane")
