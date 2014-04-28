@@ -253,12 +253,19 @@ ditto.comp_when = function(args) {
         "return ("+ditto.comp_lambda([[]].concat(ditto.cdr(args)))+")() }})()";
 };
 
+ditto.foldl_single_helper = function(fn,val,src) {
+    for (var i=0; i<src.length; i++) {
+        val=fn(src[i],val);
+    }
+    return val;
+};
+
 ditto.foldl_helper = function(args) {
     var fn=args[0];
     var val=args[1];
     var src=args[2];
     for (var i=0; i<src.length; i++) {
-        slice = []
+        slice = [];
         for(var j=2; j<args.length; j++) {
             slice.push(args[j][i]);
         }
@@ -329,12 +336,13 @@ ditto.core_forms = function(fn, args) {
     // todo - make general for multiple lists as input
     // iterative fold version for optimisation
     if (fn == "foldl") {
-        return "ditto.foldl_helper(["+ditto.list_map(ditto.comp,args).join(",")+"])";
-
-        //["+
-        //    ditto.comp(ditto.car(args))+","+
-        //    ditto.comp(ditto.cadr(args))+","+
-        //    ditto.comp(ditto.caddr(args))+"])";
+        if (args.length==3)
+            return "ditto.foldl_single_helper("+
+            ditto.comp(ditto.car(args))+","+
+            ditto.comp(ditto.cadr(args))+","+
+            ditto.comp(ditto.caddr(args))+")";
+        else
+            return "ditto.foldl_helper(["+ditto.list_map(ditto.comp,args).join(",")+"])";
     }
 
     if (fn == "list_q") {
