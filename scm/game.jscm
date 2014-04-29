@@ -49,14 +49,25 @@
     (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
    2))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; population stuff
-
 (define pop-size 10)
-
 (define butterfly-list ())
 (define chromo ())
 (define toxic-expr ())
+(define test-tex (build-list 32 (lambda (i) (load-texture (+ "patterns/" (+ i 1) ".png")))))
+(define bg-tex (load-texture "bg.png"))
+(define title-tex (load-texture "title.png"))
+(define flash 0)
+(define toxic-flash 0)
+(define health 50)
+(define hint-dur 100)
+(define hint-time 100)
+(define score 0)
+(define edible-score 0)
+(define toxic-score 0)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; population stuff
+
 
 (define (build-population)
   (set! chromo model)
@@ -107,6 +118,7 @@
                    (set! health (+ health 5))
                    (set! flash 255)
                    (set! found 1)
+                   (set! edible-score (+ edible-score 1))
                    (set! chromo (chromosome-remove-expression chromo (butterfly-expr b))))
                  )))
     (if (car edible) ;; edible hit detected
@@ -119,6 +131,7 @@
                   (make-gobble (vx pos) (vy pos) 255 0 0 0.01)
                   (set! health (- health 15))
                   (set! toxic-flash 255)
+                  (set! toxic-score (+ toxic-score 1))
                   (set! found 1))))))))
 
 (define (replenish butterfly-list fn)
@@ -132,10 +145,6 @@
    (replenish (list-ref butterfly-list 1) (lambda () toxic-expr))))
 
 
-(define test-tex (build-list 32 (lambda (i) (load-texture (+ "patterns/" (+ i 1) ".png")))))
-(define bg-tex (load-texture "bg.png"))
-
-(define title-tex (load-texture "title.png"))
 
 (define (render-intro)
 ;  (set! butterfly-list (map update-butterflies butterfly-list))
@@ -169,12 +178,6 @@
    ((< v min) min)
    ((> v max) max)   (else v)))
 
-(define flash 0)
-(define toxic-flash 0)
-(define health 50)
-(define hint-dur 100)
-(define hint-time 100)
-(define score 0)
 
 (define (nightjar-intro c)
   (every-frame (render-intro))
@@ -192,6 +195,9 @@
        (lambda (c)
          (set! health 50)
          (set! score 0)
+         (set! hint-time 100)
+         (set! edible-score 0)
+         (set! toxic-score 0)
          (build-population)
          (nightjar-game c)))
       )
@@ -199,7 +205,6 @@
 
 
 (define (nightjar-game c)
-  (set! hint-time 100)
   (every-frame (render-game))
   (game-modify-update
    (lambda (t c)
@@ -299,15 +304,17 @@
      (lambda (ctx)
       (set! ctx.font "normal 40pt amatic")
       (wrap-text ctx "Game Over" 0 340)
-      (wrap-text ctx (string-append "Your score is: " score) 0 400))
-    (game-modify-buttons
-     (list
-      (image-button
-       "Done" 600 550 "jumpy" (find-image "button.png")
-       (lambda (c)
-         (nightjar-intro c)))
-      )
-     c)))))
+      (set! ctx.font "bold 40pt amatic")
+      (wrap-text ctx (string-append "You ate " edible-score " edible butterflies and " toxic-score " toxic butterflies.") 0 400)
+      (set! ctx.font "normal 40pt amatic"))
+     (game-modify-buttons
+      (list
+       (image-button
+        "Done" 600 550 "jumpy" (find-image "button.png")
+        (lambda (c)
+          (nightjar-intro c)))
+       )
+      c)))))
 
 
 
