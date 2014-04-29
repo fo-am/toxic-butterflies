@@ -104,7 +104,7 @@
    (with-state
     (rotate (vector 180 0 0))
     (translate (vector 0 0 -0.5))
-    (let ((a (+ 90 (* 0 (+ 1 (sin (* 5  (time))))))))
+    (let ((a (+ 90 (* 3 (+ 1 (sin (* 5  (time))))))))
       (with-state
        (rotate (vector 0 0 a))
        (draw-obj 3))
