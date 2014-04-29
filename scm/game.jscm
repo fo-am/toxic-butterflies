@@ -61,6 +61,7 @@
 (define health 50)
 (define hint-dur 100)
 (define hint-time 100)
+(define replenish-tick 0)
 (define score 0)
 (define edible-score 0)
 (define toxic-score 0)
@@ -74,8 +75,8 @@
   (set! toxic-expr (chromosome-express chromo))
   (set! butterfly-list
         (list
-         (build-list pop-size (lambda (i) (butterfly (chromosome-express chromo))))
-         (build-list pop-size (lambda (i) (butterfly toxic-expr))))))
+         (build-list 1 (lambda (i) (butterfly (chromosome-express chromo))))
+         (build-list 1 (lambda (i) (butterfly toxic-expr))))))
 
 (define (build-demo-population)
   (set! chromo model)
@@ -109,6 +110,7 @@
       (list #t (delete-n butterfly-list (cadr closest))))
      (else (list #f butterfly-list)))))
 
+(define found 0)
 
 (define (detect-hits-butterflies butterfly-list c)
   (let ((edible (detect-hits
@@ -131,8 +133,7 @@
                   (make-gobble (vx pos) (vy pos) 255 0 0 0.01)
                   (set! health (- health 15))
                   (set! toxic-flash 255)
-                  (set! toxic-score (+ toxic-score 1))
-                  (set! found 1))))))))
+                  (set! toxic-score (+ toxic-score 1)))))))))
 
 (define (replenish butterfly-list fn)
   (if (< (length butterfly-list) pop-size)
@@ -216,12 +217,24 @@
   (game-modify-mouse-hook
    (lambda (e c)
      (when (eq? e "down")
-           (set! butterfly-list (detect-hits-butterflies butterfly-list c)))
+           (set! butterfly-list (detect-hits-butterflies butterfly-list c))
+           ;; instantly replace edible butterfly
+           (when (not (zero? found))
+                 (set! butterfly-list
+                       (list
+                        (replenish (list-ref butterfly-list 0) (lambda () (chromosome-express chromo)))
+                        (list-ref butterfly-list 1)))
+                 (set! found 0)))
+
      c)
    (game-modify-render
     (lambda (ctx)
 
-      (set! butterfly-list (replenish-butterflies butterfly-list))
+      (when (> replenish-tick 50)
+            (set! replenish-tick 0)
+            (set! butterfly-list (replenish-butterflies butterfly-list)))
+      (set! replenish-tick (+ (* 100 (game-time-delta c)) replenish-tick))
+
 
       (set! flash (* flash 0.9))
       (set! toxic-flash (* toxic-flash 0.9))
