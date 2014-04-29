@@ -41,7 +41,7 @@
       (if (eq? (allele-id allele) genome)
           (allele-modify-probability
            allele
-           (max 0 (- (allele-probability allele) 0.1)))
+           (max 0 (- (allele-probability allele) 0.05)))
           allele))
     gene)))
 
