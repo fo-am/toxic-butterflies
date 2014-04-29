@@ -214,15 +214,18 @@
 
 (define (button-text-jumpy-render! b t)
   (let ((m (ctx.measureText (button-name b)))
-        (cm (ctx.measureText "w"))
+        (cm 0)
+        (pos 0)
         (txt (button-name b)))
     (let ((ta (txt.split ""))
           (x (- (/ (button-w b) 2) (/ m.width 2)))
           (y (+ (/ (button-h b) 2) 5)))
       (index-for-each
        (lambda (i c)
-         (ctx.fillText c (+ x (* i cm.width))
-                       (+ y (* 3 (sin (+ (* t 0.01) i))))))
+         (set! cm (ctx.measureText c))
+         (ctx.fillText c (+ x pos)
+                       (+ y (* 3 (sin (+ (* t 0.01) i)))))
+         (set! pos (+ pos cm.width)))
        ta))))
 
 (define (to-hex c)

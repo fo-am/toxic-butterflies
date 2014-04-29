@@ -20,7 +20,7 @@
 (load "scm/butterfly/gui.jscm")
 (load "scm/butterfly/butterfly.jscm")
 
-(define chromo
+(define model
   (list
    (gene-normalise
     (list (allele "dennis-patch-on" 0.5)
@@ -40,30 +40,44 @@
    ))
 
 (define (expr-to-number expr)
-  (dbg
-   (parseInt
-    (string-append
-     (if (eq? (list-ref expr 0) "dennis-patch-on") "0" "1")
-     (if (eq? (list-ref expr 1) "hw-rays-on") "0" "1")
-     (if (eq? (list-ref expr 2) "red-fw-band-on") "0" "1")
-     (if (eq? (list-ref expr 3) "yellow-fw-band-on") "0" "1")
-     (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
-    2)))
-
-(define toxic-expr (chromosome-express chromo))
+  (parseInt
+   (string-append
+    (if (eq? (list-ref expr 0) "dennis-patch-on") "0" "1")
+    (if (eq? (list-ref expr 1) "hw-rays-on") "0" "1")
+    (if (eq? (list-ref expr 2) "red-fw-band-on") "0" "1")
+    (if (eq? (list-ref expr 3) "yellow-fw-band-on") "0" "1")
+    (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
+   2))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; population stuff
 
 (define pop-size 10)
 
-(define butterfly-list
-  (list
-   (build-list pop-size (lambda (i) (butterfly (chromosome-express chromo))))
-   (build-list pop-size (lambda (i) (butterfly toxic-expr)))))
+(define butterfly-list ())
+(define chromo ())
+(define toxic-expr ())
 
-(define edible-index 0)
-(define toxic-index 1)
+(define (build-population)
+  (set! chromo model)
+  (set! toxic-expr (chromosome-express chromo))
+  (set! butterfly-list
+        (list
+         (build-list pop-size (lambda (i) (butterfly (chromosome-express chromo))))
+         (build-list pop-size (lambda (i) (butterfly toxic-expr))))))
+
+(define (build-demo-population)
+  (set! chromo model)
+  (set! toxic-expr (chromosome-express chromo))
+  (set! butterfly-list
+        (list
+         (build-list 15 (lambda (i)
+                          (let ((i (* i (/ (* 2 3.141) 15))))
+                            (demo-butterfly
+                             toxic-expr
+                             (vector 0 0 0)
+                             (vector (sin i) (cos i) 0))))))))
+
 
 (define (detect-hits butterfly-list c fn)
   ;; find closest index
@@ -89,8 +103,8 @@
   (let ((edible (detect-hits
                  (list-ref butterfly-list 0) c
                  (lambda (b pos)
-                   (make-gobble (vx pos) (vy pos) 0 255 0)
-                   (set! energy (+ energy 5))
+                   (make-gobble (vx pos) (vy pos) 0 255 0 0.05)
+                   (set! health (+ health 5))
                    (set! flash 255)
                    (set! found 1)
                    (set! chromo (chromosome-remove-expression chromo (butterfly-expr b))))
@@ -102,9 +116,8 @@
                (detect-hits ;; search for toxic hits
                 (list-ref butterfly-list 1) c
                 (lambda (b pos)
-                  (make-gobble (vx pos) (vy pos) 255 0 0)
-                  (set! energy (- energy 5))
-                  (set! toxic (+ toxic 5))
+                  (make-gobble (vx pos) (vy pos) 255 0 0 0.01)
+                  (set! health (- health 15))
                   (set! toxic-flash 255)
                   (set! found 1))))))))
 
@@ -122,7 +135,25 @@
 (define test-tex (build-list 32 (lambda (i) (load-texture (+ "patterns/" (+ i 1) ".png")))))
 (define bg-tex (load-texture "bg.png"))
 
-(define (render)
+(define title-tex (load-texture "title.png"))
+
+(define (render-intro)
+;  (set! butterfly-list (map update-butterflies butterfly-list))
+;  (for-each render-butterflies butterfly-list)
+
+  (with-state
+   (texture title-tex)
+   (translate (vector 10 -4.5 0))
+   (scale (vector 18 18 18))
+   (render-big-butterfly))
+
+  (with-state
+   (texture bg-tex)
+   (translate (vector 0 0 -100))
+   (scale (vector 100 100 100))
+   (draw-cube)))
+
+(define (render-game)
   (set! butterfly-list (map update-butterflies butterfly-list))
   (for-each render-butterflies butterfly-list)
 
@@ -132,54 +163,6 @@
    (scale (vector 100 100 100))
    (draw-cube)))
 
-;; set the one shader
-(shader
-"
-precision mediump float;
-uniform vec3 LightPos;
-varying vec3 N;
-varying vec3 P;
-varying vec3 V;
-varying vec3 L;
-varying vec3 T;
-uniform mat4 ViewMatrix;
-uniform mat4 CameraMatrix;
-uniform mat4 LocalMatrix;
-uniform mat4 NormalMatrix;
-attribute vec3 p;
-attribute vec3 n;
-attribute vec3 t;
-void main()
-{
-    mat4 ModelViewMatrix = ViewMatrix * CameraMatrix * LocalMatrix;
-    N = vec3(ModelViewMatrix*vec4(normalize(n),0.0));
-    P = p.xyz;
-    T = t;
-    V = -vec3(ModelViewMatrix*vec4(p,1.0));
-    L = vec3(ModelViewMatrix*vec4((LightPos-p),1));
-    gl_Position = ModelViewMatrix * vec4(p,1);
-}"
-
-"
-precision mediump float;
-varying vec3 N;
-varying vec3 P;
-varying vec3 V;
-varying vec3 L;
-varying vec3 T;
-uniform sampler2D texture;
-void main() {
- /*vec3 l=normalize(L);
- vec3 n=normalize(N);*/
- gl_FragColor = texture2D(texture,vec2(T.s,T.t));
-
-/* float lv=max(0.0,min(1.0,dot(l,n)));
-
- gl_FragColor = vec4(texture2D(texture,vec2(T.s,T.t)).xyz*lv,1.0);
- gl_FragColor = vec4(lv,lv,lv,1.0);*/
-
-}
-")
 
 (define (clamp v min max)
   (cond
@@ -188,14 +171,43 @@ void main() {
 
 (define flash 0)
 (define toxic-flash 0)
-
-(define energy 50)
-(define toxic 0)
-
+(define health 50)
 (define hint-dur 100)
 (define hint-time 100)
+(define score 0)
 
 (define (nightjar-intro c)
+  (every-frame (render-intro))
+;;  (build-demo-population)
+  (game-modify-mouse-hook
+   (lambda (e c) c)
+   (game-modify-render
+    (lambda (ctx)
+      (set! ctx.font "normal 40pt amatic")
+      (wrap-text ctx "Heliconius Butterfly Wing Pattern Evolver" 0 400))
+    (game-modify-buttons
+     (list
+      (image-button
+       "PLAY!" 600 550 "jumpy" (find-image "button.png")
+       (lambda (c)
+         (set! health 50)
+         (set! score 0)
+         (build-population)
+         (nightjar-game c)))
+      )
+     c))))
+
+
+(define (nightjar-game c)
+  (set! hint-time 100)
+  (every-frame (render-game))
+  (game-modify-update
+   (lambda (t c)
+     (if (< health 1)
+         (begin
+           (msg "done!")
+           (nightjar-game-over c))
+         c))
   (game-modify-mouse-hook
    (lambda (e c)
      (when (eq? e "down")
@@ -208,11 +220,10 @@ void main() {
 
       (set! flash (* flash 0.9))
       (set! toxic-flash (* toxic-flash 0.9))
-      (set! energy (clamp (- energy (* 10 (game-time-delta c))) 0 100))
+      (set! health (clamp (- health (* 10 (game-time-delta c))) 0 100))
       (set! hint-time (+ hint-time 0.1))
 
-      (draw-pie ctx 70 700 toxic 100 255 0 0)
-      (draw-pie ctx 1100 700 energy 100 0 220 120)
+      (draw-pie ctx 1100 700 health 100 0 220 120)
 
       (when (> flash 10)
             (draw-flash ctx 1100 700
@@ -220,7 +231,7 @@ void main() {
                         0 255 0 (/ flash 255)))
 
       (when (> toxic-flash 10)
-            (draw-flash ctx 70 700
+            (draw-flash ctx 1100 700
                         200
                         255 127 200 (/ toxic-flash 255)))
 
@@ -229,6 +240,10 @@ void main() {
       (draw-expr ctx 50 350 toxic-expr)
 
       (set! ctx.strokeStyle "#fff")
+
+      (when (and (< health 20) (< (modulo hint-time 2) 1))
+            (set! ctx.font "bold 40pt amatic")
+            (ctx.fillText "Health Is Low!" 600 400))
 
       (when (> hint-time hint-dur)
             (when (< (modulo hint-time 2) 1)
@@ -242,14 +257,14 @@ void main() {
                        (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
                        (ctx.closePath)
                        (ctx.stroke)
-                       (set! ctx.font "normal 40pt gnuolane")
-                       (ctx.fillText "TOXIC!!" (- (vx pos) 100) (- (vy pos) 20))
+                       (set! ctx.font "bold 40pt amatic")
+                       (ctx.fillText "TOXIC!!" (- (vx pos) 50) (- (vy pos) 60))
                        ))
-                   (list-ref butterfly-list toxic-index)))
+                   (list-ref butterfly-list 1)))
             (when (> hint-time (+ hint-dur 20)) (set! hint-time 0)))
 
       (set! ctx.fillStyle "#fff")
-      (set! ctx.font "normal 10pt gnuolane")
+      (set! ctx.font "normal 10pt amatic")
 
  ;     (wrap-text ctx
  ;                (string-append "Num butterflies: " (length butterfly-list))
@@ -273,21 +288,40 @@ void main() {
 
 
       )
-     c))))
+     c)))))
+
+(define (nightjar-game-over c)
+  (game-modify-update
+   (lambda (t c) c)
+   (game-modify-mouse-hook
+    (lambda (e c) c)
+    (game-modify-render
+     (lambda (ctx)
+      (set! ctx.font "normal 40pt amatic")
+      (wrap-text ctx "Game Over" 0 340)
+      (wrap-text ctx (string-append "Your score is: " score) 0 400))
+    (game-modify-buttons
+     (list
+      (image-button
+       "Done" 600 550 "jumpy" (find-image "button.png")
+       (lambda (c)
+         (nightjar-intro c)))
+      )
+     c)))))
 
 
 
 
-(every-frame (render))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; startup
+(set! ctx.font "normal 10pt amatic")
 
 (load-images!
  (append
   (list
    "heliconius.png"
-   "plus.png"
-   "minus.png"))
+   "button.png"))
  (lambda ()
    (start-game canvas ctx)))

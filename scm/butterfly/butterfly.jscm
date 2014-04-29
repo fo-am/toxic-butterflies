@@ -6,7 +6,10 @@
    (vnormalise (crndvec)) ;; dir
    (rndf) ;; fuzz
    (expr-to-number expr)
-   expr)) ;; texture
+   expr ;; texture
+   (* 0.1 (- (rndf) 0.5))  ;; turn
+   "idle" ;; state
+   20)) ;; speed
 
 (define (butterfly-pos s) (list-ref s 0))
 (define (butterfly-modify-pos s v) (list-replace s 0 v))
@@ -15,21 +18,54 @@
 (define (butterfly-fuzz s) (list-ref s 2))
 (define (butterfly-texture s) (list-ref s 3))
 (define (butterfly-expr s) (list-ref s 4))
+(define (butterfly-turn s) (list-ref s 5))
+(define (butterfly-modify-turn s v) (list-replace s 5 v))
+(define (butterfly-state s) (list-ref s 6))
+(define (butterfly-modify-state s v) (list-replace s 6 v))
+(define (butterfly-speed s) (list-ref s 7))
+(define (butterfly-modify-speed s v) (list-replace s 7 v))
+
+(define safe-distance 10)
+
+(define (butterfly-advance-state s)
+  (let ((state (butterfly-state s)))
+    (cond
+     ((eq? state "re-centre")
+      (if (< (vmag (butterfly-pos s)) safe-distance)
+          (butterfly-modify-state s "idle")
+          (butterfly-modify-turn
+           (butterfly-modify-dir
+            s (vnormalise (vneg (butterfly-pos s))))
+           0)))
+
+     ((eq? state "idle")
+      (if (> (vmag (butterfly-pos s)) safe-distance)
+          (butterfly-modify-state s "re-centre")
+          (if (< (rndf) 0.99)
+              s
+              (butterfly-modify-turn
+               (butterfly-modify-speed
+                s
+                (+ 10 (* (rndf) 20)))
+               (* 0.1 (- (rndf) 0.5))))))
+     (else s))))
+
 
 (define (butterfly-screen-pos s)
   (project-point (butterfly-pos s)))
 
 (define (update-butterfly s)
-  (let ((a 0.03))
+  (let ((a (butterfly-turn s)))
   (let ((dir (butterfly-dir s)))
-    (butterfly-modify-pos
-     (butterfly-modify-dir
-      s
-      (vector (+ (* (vx dir) (cos a)) (* (vy dir) (- 0 (sin a))))
-              (+ (* (vx dir) (sin a)) (* (vy dir) (cos a)))
-              0))
-     (vadd (butterfly-pos s)
-           (vmul dir 0.05))))))
+    (butterfly-advance-state
+     (butterfly-modify-pos
+      (butterfly-modify-dir
+       s
+       (vector (+ (* (vx dir) (cos a)) (* (vy dir) (- 0 (sin a))))
+               (+ (* (vx dir) (sin a)) (* (vy dir) (cos a)))
+               0))
+      (vadd (butterfly-pos s)
+            (vmul dir 0.05)))))))
 
 (define (update-butterflies b)
   (map
@@ -48,7 +84,8 @@
    (with-state
     (rotate (vector 180 0 0))
     (translate (vector 0 0 -0.5))
-    (let ((a (+ 90 (* 40 (+ 1 (sin (* 20 (+ (butterfly-fuzz s) (time)))))))))
+    (let ((a (+ 90 (* 40 (+ 1 (sin (* (butterfly-speed s)
+                                      (+ (butterfly-fuzz s) (time)))))))))
       (with-state
        (rotate (vector 0 0 a))
        (draw-obj 3))
@@ -57,8 +94,77 @@
        (rotate (vector 0 0 a))
        (draw-obj 3))))))
 
+(define big-tex (load-texture "wing-scale.png"))
+
+(define (render-big-butterfly)
+  (with-state
+   (texture big-tex)
+   (rotate (vector 90 180 90))
+   (scale (vector 0.5 0.5 0.5))
+   (with-state
+    (rotate (vector 180 0 0))
+    (translate (vector 0 0 -0.5))
+    (let ((a (+ 90 (* 0 (+ 1 (sin (* 5  (time))))))))
+      (with-state
+       (rotate (vector 0 0 a))
+       (draw-obj 3))
+      (with-state
+       (scale (vector 1 -1 1))
+       (rotate (vector 0 0 a))
+       (draw-obj 3))))))
+
+
 (define (render-butterflies s)
   (for-each
    (lambda (p)
      (render-butterfly p))
    s))
+
+;; set the one shader
+(shader
+"
+precision mediump float;
+uniform vec3 LightPos;
+varying vec3 N;
+varying vec3 P;
+varying vec3 V;
+varying vec3 L;
+varying vec3 T;
+uniform mat4 ViewMatrix;
+uniform mat4 CameraMatrix;
+uniform mat4 LocalMatrix;
+uniform mat4 NormalMatrix;
+attribute vec3 p;
+attribute vec3 n;
+attribute vec3 t;
+void main()
+{
+    mat4 ModelViewMatrix = ViewMatrix * CameraMatrix * LocalMatrix;
+    N = vec3(ModelViewMatrix*vec4(normalize(n),0.0));
+    P = p.xyz;
+    T = t;
+    V = -vec3(ModelViewMatrix*vec4(p,1.0));
+    L = vec3(ModelViewMatrix*vec4((LightPos-p),1));
+    gl_Position = ModelViewMatrix * vec4(p,1);
+}"
+
+"
+precision mediump float;
+varying vec3 N;
+varying vec3 P;
+varying vec3 V;
+varying vec3 L;
+varying vec3 T;
+uniform sampler2D texture;
+void main() {
+ /*vec3 l=normalize(L);
+ vec3 n=normalize(N);*/
+ gl_FragColor = texture2D(texture,vec2(T.s,T.t));
+
+/* float lv=max(0.0,min(1.0,dot(l,n)));
+
+ gl_FragColor = vec4(texture2D(texture,vec2(T.s,T.t)).xyz*lv,1.0);
+ gl_FragColor = vec4(lv,lv,lv,1.0);*/
+
+}
+")

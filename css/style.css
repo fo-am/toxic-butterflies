@@ -1,5 +1,10 @@
+@font-face {
+    font-family: 'amatic';
+    src: url('../fonts/AmaticSC-Regular.ttf');
+}
+
 html, body {
-    font-family: 'Press Start 2P';
+    font-family: 'amatic';
     color: #fff;
     font-size:  20;
     background: #777;

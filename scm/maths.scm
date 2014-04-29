@@ -46,6 +46,11 @@
           (- (vy a) (vy b))
           (- (vz a) (vz b))))
 
+(define (vneg a)
+  (vector (- 0 (vx a))
+          (- 0 (vy a))
+          (- 0 (vz a))))
+
 (define (vmul v a)
   (vector (* (vx v) a) (* (vy v) a) (* (vz v) a)))
 

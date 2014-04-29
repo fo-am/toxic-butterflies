@@ -12,7 +12,9 @@
 
 (define (draw-pie ctx x y time max-time r g b)
   (stroke-pie ctx (+ x 3) (+ y 3) max-time max-time)
-  (set! ctx.fillStyle "#000")
+  (set! ctx.fillStyle (string-append "rgba(" (Math.floor (/ r 2)) ", "
+                                     (Math.floor (/ g 2)) ", "
+                                     (Math.floor (/ b 2)) ", 1.0)"))
   (ctx.fill)
 
   (stroke-pie ctx x y time max-time)
@@ -23,15 +25,16 @@
 
   (set! ctx.lineWidth 1)
   (set! ctx.fillStyle "#fff")
-  (set! ctx.font "normal 30pt gnuolane")
-  (ctx.fillText (Math.floor time) x (+ y 20))
+  (set! ctx.font "bold 60pt amatic")
+  (let ((cm (ctx.measureText (+ "" (Math.floor time)))))
+    (ctx.fillText (Math.floor time) (- x (/ cm.width 2))  (+ y 33)))
   )
 
 (define (draw-chromosome ctx x y chromo)
   (index-for-each
    (lambda (i gene)
      (set! ctx.fillStyle "#fff")
-     (set! ctx.font "normal 10pt gnuolane")
+     (set! ctx.font "bold 15pt amatic")
      (ctx.fillText (allele-id (car gene)) x (+ y (- (* i 40) 10)))
      (set! ctx.fillStyle "#000")
      (ctx.fillRect x (+ y (* i 40)) 100 10)
@@ -42,11 +45,10 @@
   )
 
 (define (draw-expr ctx x y expr)
-  (msg expr)
   (index-for-each
    (lambda (i e)
      (set! ctx.fillStyle "#fff")
-     (set! ctx.font "normal 10pt gnuolane")
+     (set! ctx.font "bold 15pt amatic")
      (ctx.fillText e x (+ y (- (* i 40) 10)))
      (set! ctx.fillStyle "#000")
      (ctx.fillRect x (+ y (* i 40)) 100 10)
@@ -73,13 +75,14 @@
     (set! ctx.fillStyle grd)
     (ctx.fill)))
 
-(define (make-gobble x y r g b)
+(define (make-gobble x y r g b s)
   (set! gobble-x x)
   (set! gobble-y y)
   (set! gobble-t 0)
   (set! gobble-r r)
   (set! gobble-g g)
-  (set! gobble-b b))
+  (set! gobble-b b)
+  (set! gobble-s s))
 
 (define gobble-x 0)
 (define gobble-y 0)
@@ -87,19 +90,20 @@
 (define gobble-r 1)
 (define gobble-g 1)
 (define gobble-b 1)
+(define gobble-s 0.2)
 
 (define (draw-gobble ctx)
   (when (< gobble-t 1)
         (ctx.beginPath)
         (ctx.arc gobble-x gobble-y
-                 (* (- 1 gobble-t) 100)
+                 (* (- 1 gobble-t) 150)
                  0 (* Math.PI 2) true)
         (ctx.closePath)
         (let ((grd (ctx.createRadialGradient
                     gobble-x gobble-y (* (- 1 gobble-t) 10)
-                    gobble-x gobble-y (* (- 1 gobble-t) 100))))
+                    gobble-x gobble-y (* (- 1 gobble-t) 150))))
           (grd.addColorStop 0 (string-append "rgba(" gobble-r ", " gobble-g ", " gobble-b ", " a ")"))
           (grd.addColorStop 1 (string-append "rgba(255, 255, 0, 0.0)"))
           (set! ctx.fillStyle grd)
           (ctx.fill))
-        (set! gobble-t (+ gobble-t 0.2))))
+        (set! gobble-t (+ gobble-t gobble-s))))

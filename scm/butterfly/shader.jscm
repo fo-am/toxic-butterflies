@@ -1,0 +1,78 @@
+(shader blinn-vertex-shader
+"
+precision mediump float;
+varying vec3 N;
+varying vec3 P;
+varying vec3 V;
+varying vec3 L;
+varying vec3 T;
+uniform sampler2D texture;
+
+vec2 rand(vec2 co){
+    return vec2(fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453)-0.5,
+                fract(cos(dot(co.xy,vec2(1.9898,78.233))) * 33758.5453)-0.5);
+}
+
+
+void main()
+{
+     vec3 t = T*vec3(2.0,1.0,1.0);
+
+     /* parameters */
+     float scale_width=0.01;
+     float disruption=0.015;
+     float anti_alias=0.000001;
+
+     /* these we figure out from scale_width */
+     float scale_height=scale_width*0.5;
+     float scale_size_sq=scale_height*scale_height;
+
+     /* find row 0 or 1 */
+     float row = mod(floor(t.y/scale_height),2.0);
+
+     /* find our position in the scale space rectangle */
+     vec2 pos = mod(t.xy, vec2(scale_width,scale_height));
+
+     /* position of top left corner of rect in texture space (flip x) */
+     vec2 tpos = floor(t.xy/vec2(-scale_width,scale_height))*
+                       vec2(scale_width*0.5,scale_height);
+
+
+     vec2 offa = vec2(0,scale_height*row);
+     vec2 posa = pos-offa;
+     float dista = dot(posa, posa);
+     vec4 cola = texture2D(texture,tpos+offa+rand(tpos+offa)*disruption);
+
+     vec2 offb = vec2(scale_width,scale_height*row);
+     vec2 posb = pos-offb;
+     float distb = dot(posb, posb);
+     vec4 colb = texture2D(texture,tpos+offb+rand(tpos+offb)*disruption);
+
+     vec2 offc = vec2(scale_width*0.5,scale_height*(1.0-row));
+     vec2 posc = pos-offc;
+     float distc = dot(posc, posc);
+     vec4 colc = texture2D(texture,tpos+offc+rand(tpos+offc)*disruption);
+
+     float top=smoothstep(dista-anti_alias,dista+anti_alias,scale_size_sq)+
+               smoothstep(distb-anti_alias,distb+anti_alias,scale_size_sq);
+     float bottom=smoothstep(distc-anti_alias,distc+anti_alias,scale_size_sq);
+
+     float bg = 1.0-(row+(pos.y/scale_height))/2.0;
+     float tg = 1.0-((1.0-row)+(pos.y/scale_height))/2.0;
+
+     vec4 topcol=(cola*smoothstep(distb-anti_alias,distb+anti_alias,scale_size_sq)+
+                  colb*smoothstep(dista-anti_alias,dista+anti_alias,scale_size_sq))*
+                  vec4(vec3(tg+tg*0.1),1.0);
+                  vec4 botcol=colc*smoothstep(distc-anti_alias,distc+anti_alias,scale_size_sq)*
+                  vec4(vec3(bg+bg*0.1),1.0);
+
+     /* do some simple diffuse lighting */
+     float lit=1.0; /*0.1+max(0.0,0.5+dot(vec3(0,1,0),normalize(N)));*/
+
+     if (row==1.0) {
+         gl_FragColor = mix(topcol,botcol,bottom*(1.0-top))*lit;
+     } else {
+         gl_FragColor = mix(botcol,topcol,top*(1.0-bottom))*lit;
+     }
+
+}")
