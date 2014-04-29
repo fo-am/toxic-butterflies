@@ -225,7 +225,7 @@
 
       (set! flash (* flash 0.9))
       (set! toxic-flash (* toxic-flash 0.9))
-      (set! health (clamp (- health (* 10 (game-time-delta c))) 0 100))
+      (set! health (clamp (- health (* 30 (game-time-delta c))) 0 100))
       (set! hint-time (+ hint-time 0.1))
 
       (draw-pie ctx 1100 700 health 100 0 220 120)

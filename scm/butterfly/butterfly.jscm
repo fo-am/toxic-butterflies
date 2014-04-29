@@ -110,7 +110,7 @@
        (draw-obj 3))
       (with-state
        (scale (vector 1 -1 1))
-       (rotate (vector 0 0 a))
+       (rotate (vector 0 0 (+ 45 (- a 90))))
        (draw-obj 3))))))
 
 
