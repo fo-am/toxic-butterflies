@@ -49,7 +49,7 @@
     (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
    2))
 
-(define pop-size 10)
+(define pop-size 15)
 (define butterfly-list ())
 (define chromo ())
 (define toxic-expr ())
