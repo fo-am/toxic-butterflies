@@ -41,7 +41,7 @@
       (if (eq? (allele-id allele) genome)
           (allele-modify-probability
            allele
-           (max 0 (- (allele-probability allele) 0.075)))
+           (max 0 (- (allele-probability allele) 0.05)))
           allele))
     gene)))
 
@@ -54,3 +54,38 @@
 
 (define (chromosome-remove-expression chromo expr)
   (map2 gene-remove-expression chromo expr))
+
+
+(define (allele-similarity allele expr)
+  (if (eq? (allele-id allele) expr)
+      (allele-probability allele)
+      0))
+
+(define (gene-similarity gene expr)
+  (foldl
+   (lambda (allele r)
+     (+ r (allele-similarity allele expr)))
+   0
+   gene))
+
+(define (chromosome-similarity chromo expr)
+  (* (/
+      (foldl
+       (lambda (gene expr r)
+         (+ r (gene-similarity gene expr) ))
+       0
+       chromo expr)
+      (length chromo)) 100))
+
+(define (expr-similarity a b)
+  (/
+   (foldl
+    (lambda (a b r)
+      (+ r (if (eq? a b) 1 0)))
+    0
+    a b)
+   (length a)))
+
+(msg "TESTING....")
+(msg (expr-similarity (list "one" "two" "three")
+                       (list "one" "two" "three")))

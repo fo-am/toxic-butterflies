@@ -1,5 +1,8 @@
 ;; -*- mode: scheme; -*-
 
+(define (number-display n)
+  (/ (Math.floor (* 100 n)) 100))
+
 (define (stroke-pie ctx x y time max-time)
   (ctx.beginPath)
   (ctx.moveTo x y)

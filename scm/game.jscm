@@ -62,7 +62,7 @@
 (define hint-dur 100)
 (define hint-time 100)
 (define replenish-tick 0)
-(define score 0)
+(define start-time 0)
 (define edible-score 0)
 (define toxic-score 0)
 
@@ -84,6 +84,17 @@
   (set! butterfly-list
         (list
          (build-list 15 fn))))
+
+(define (pop-similarity)
+  (*
+   (/
+    (foldl
+     (lambda (b r)
+       (+ r (expr-similarity (butterfly-expr b) toxic-expr)))
+     0
+     (car butterfly-list))
+    (length (car butterfly-list)))
+   100))
 
 (define (detect-hits butterfly-list c fn)
   ;; find closest index
@@ -194,7 +205,7 @@
        "PLAY!" 620 550 "jumpy" (find-image "button.png")
        (lambda (c)
          (set! health 50)
-         (set! score 0)
+         (set! start-time (time))
          (set! hint-time 100)
          (set! edible-score 0)
          (set! toxic-score 0)
@@ -253,14 +264,20 @@
                         255 127 200 (/ toxic-flash 255)))
 
 
-      (draw-chromosome ctx 50 50 chromo)
-      (draw-expr ctx 50 350 toxic-expr)
+;;      (draw-chromosome ctx 50 50 chromo)
+;;      (draw-expr ctx 50 350 toxic-expr)
 
       (set! ctx.strokeStyle "#fff")
 
       (when (and (< health 20) (< (modulo hint-time 2) 1))
+            (set! ctx.fillStyle "#f00")
             (set! ctx.font "bold 40pt amatic")
             (ctx.fillText "Health Is Low!" 600 400))
+
+
+      (set! ctx.font "bold 40pt amatic")
+      (set! ctx.fillStyle "#fff")
+      (ctx.fillText (string-append "Similarity:" (number-display (pop-similarity)) "%") 20 700)
 
       (when (> hint-time hint-dur)
             (when (< (modulo hint-time 2) 1)
@@ -322,25 +339,30 @@
      c)))))
 
 (define (nightjar-game-over c)
-  (game-modify-update
-   (lambda (t c) c)
-   (game-modify-mouse-hook
-    (lambda (e c) c)
-    (game-modify-render
-     (lambda (ctx)
-      (set! ctx.font "normal 40pt amatic")
-      (wrap-text ctx "Game Over" 0 340)
-      (set! ctx.font "bold 40pt amatic")
-      (wrap-text ctx (string-append "You ate " edible-score " edible butterflies and " toxic-score " toxic butterflies.") 0 400)
-      (set! ctx.font "normal 40pt amatic"))
-     (game-modify-buttons
-      (list
-       (image-button
-        "Done" 600 550 "jumpy" (find-image "button.png")
-        (lambda (c)
-          (nightjar-intro c)))
-       )
-      c)))))
+  (let ((score (number-display (- (time) start-time))))
+    (game-modify-update
+     (lambda (t c) c)
+     (game-modify-mouse-hook
+      (lambda (e c) c)
+      (game-modify-render
+       (lambda (ctx)
+         (set! ctx.font "normal 40pt amatic")
+         (wrap-text ctx "Game Over" 0 300)
+         (set! ctx.font "bold 40pt amatic")
+         (wrap-text ctx (string-append "You survived " score " seconds") 0 380)
+         (wrap-text ctx (string-append "The edible butterflies became " (number-display (pop-similarity)) "% similar to the toxic species") 0 460)
+         (wrap-text ctx (string-append "You ate " edible-score " edible butterflies and " toxic-score " toxic butterflies.") 0 540)
+
+
+         (set! ctx.font "normal 40pt amatic"))
+       (game-modify-buttons
+        (list
+         (image-button
+          "Done" 650 650 "jumpy" (find-image "button.png")
+          (lambda (c)
+            (nightjar-intro c)))
+         )
+        c))))))
 
 
 
