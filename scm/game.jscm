@@ -178,13 +178,6 @@
    (scale (vector 100 100 100))
    (draw-cube)))
 
-
-(define (clamp v min max)
-  (cond
-   ((< v min) min)
-   ((> v max) max)   (else v)))
-
-
 (define (nightjar-intro c)
   (every-frame (render-intro))
   (build-demo-population
@@ -264,8 +257,8 @@
                         255 127 200 (/ toxic-flash 255)))
 
 
-;;      (draw-chromosome ctx 50 50 chromo)
-;;      (draw-expr ctx 50 350 toxic-expr)
+      (draw-chromosome ctx 50 50 chromo)
+      (draw-expr ctx 50 350 toxic-expr)
 
       (set! ctx.strokeStyle "#fff")
 
@@ -350,6 +343,7 @@
          (wrap-text ctx "Game Over" 0 300)
          (set! ctx.font "bold 40pt amatic")
          (wrap-text ctx (string-append "You survived " score " seconds") 0 380)
+         (set! ctx.font "normal 35pt amatic")
          (wrap-text ctx (string-append "The edible butterflies became " (number-display (pop-similarity)) "% similar to the toxic species") 0 460)
          (wrap-text ctx (string-append "You ate " edible-score " edible butterflies and " toxic-score " toxic butterflies.") 0 540)
 
@@ -358,7 +352,7 @@
        (game-modify-buttons
         (list
          (image-button
-          "Done" 650 650 "jumpy" (find-image "button.png")
+          "Done" 600 650 "jumpy" (find-image "button.png")
           (lambda (c)
             (nightjar-intro c)))
          )

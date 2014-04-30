@@ -12,12 +12,17 @@
 (define (gene-cumulative gene)
   (foldl (lambda (a b) (+ a b)) 0 (map (lambda (a) (cadr a)) gene)))
 
+(define (clamp v min max)
+  (cond
+   ((< v min) min)
+   ((> v max) max)   (else v)))
+
 (define (gene-normalise gene)
   (let ((total (gene-cumulative gene)))
     (map (lambda (allele)
            (allele-modify-probability
             allele
-            (/ (allele-probability allele) total)))
+            (clamp (/ (allele-probability allele) total) 0.05 0.95)))
          gene)))
 
 (define (gene-express gene)
@@ -41,7 +46,7 @@
       (if (eq? (allele-id allele) genome)
           (allele-modify-probability
            allele
-           (max 0 (- (allele-probability allele) 0.05)))
+           (max 0 (- (allele-probability allele) 0.2)))
           allele))
     gene)))
 
