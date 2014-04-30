@@ -1,5 +1,7 @@
 ;; -*- mode: scheme; -*-
 
+(define allele-decrease 0.2)
+
 (define (allele id probability)
   (list id probability))
 
@@ -46,7 +48,7 @@
       (if (eq? (allele-id allele) genome)
           (allele-modify-probability
            allele
-           (max 0 (- (allele-probability allele) 0.2)))
+           (max 0 (- (allele-probability allele) allele-decrease)))
           allele))
     gene)))
 

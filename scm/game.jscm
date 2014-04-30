@@ -305,27 +305,27 @@
             (when (> hint-time (+ hint-dur 20)) (set! hint-time 0)))
 
       (set! ctx.fillStyle "#fff")
-      (set! ctx.font "normal 10pt amatic")
+      (set! ctx.font "bold 20pt amatic")
 
- ;     (wrap-text ctx
- ;                (string-append "Num butterflies: " (length butterfly-list))
- ;                -470 100 1000 1000)
+      (wrap-text ctx
+                 (string-append "Alelle decrease: " (number-display allele-decrease))
+                 -440 280 1000 1000)
 
       (draw-gobble ctx)
       )
     (game-modify-buttons
      (list
-;      (image-button
-;       "" 80 100 "none" (find-image "plus.png")
-;       (lambda (c)
-;         (set! butterfly-list (cons (butterfly) butterfly-list))
-;         c))
+      (image-button
+       "" 80 280 "none" (find-image "plus.png")
+       (lambda (c)
+         (set! allele-decrease (+ allele-decrease 0.01))
+         c))
 
-;      (image-button
-;       "" 50 100 "none" (find-image "minus.png")
-;       (lambda (c)
-;         (set! butterfly-list (cdr butterfly-list))
-;         c))
+      (image-button
+       "" 50 280 "none" (find-image "minus.png")
+       (lambda (c)
+         (set! allele-decrease (- allele-decrease 0.01))
+         c))
 
 
       )
@@ -371,6 +371,8 @@
  (append
   (list
    "heliconius.png"
+   "plus.png"
+   "minus.png"
    "button.png"))
  (lambda ()
    (start-game canvas ctx)))
