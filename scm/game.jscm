@@ -75,8 +75,8 @@
   (set! toxic-expr (chromosome-express-toxic chromo))
   (set! butterfly-list
         (list
-         (build-list 1 (lambda (i) (butterfly (chromosome-express chromo))))
-         (build-list 1 (lambda (i) (butterfly toxic-expr))))))
+         (list (butterfly (chromosome-express chromo)))
+         (list (toxic-demo-butterfly toxic-expr)))))
 
 (define (build-demo-population fn)
   (set! chromo model)
@@ -168,6 +168,25 @@
    (scale (vector 100 100 100))
    (draw-cube)))
 
+(define (render-toxic)
+
+  (with-state
+
+   (render-butterfly (car (list-ref butterfly-list 1))))
+
+;  (with-state
+;   (texture title-tex)
+;   (translate (vector 10 -4.5 0))
+;   (scale (vector 18 18 18))
+;   (render-big-butterfly))
+
+  (with-state
+   (texture bg-tex)
+   (translate (vector 0 0 -100))
+   (scale (vector 100 100 100))
+   (draw-cube)))
+
+
 (define (render-game)
   (set! butterfly-list (map update-butterflies butterfly-list))
   (for-each render-butterflies butterfly-list)
@@ -197,16 +216,39 @@
       (image-button
        "PLAY!" 620 550 "jumpy" (find-image "button.png")
        (lambda (c)
-         (set! health 50)
-         (set! start-time (time))
-         (set! hint-time 100)
-         (set! edible-score 0)
-         (set! toxic-score 0)
          (build-population)
-         (nightjar-game c)))
+         (nightjar-show-toxic c)))
       )
      c))))
 
+
+(define (nightjar-show-toxic c)
+  (every-frame (render-toxic))
+  (game-modify-render
+   (lambda (ctx)
+     (set! ctx.font "normal 40pt amatic")
+     (wrap-text ctx "You are a hungry bird and you need to eat butterflies..." 0 200)
+     (set! ctx.font "bold 40pt amatic")
+     (wrap-text ctx "This is a toxic butterfly" 0 300)
+     (set! ctx.font "normal 30pt amatic")
+     (wrap-text ctx "Try to remember it's wing pattern and avoid clicking on butterflies of this type!" 0 500)
+
+     )
+   (game-modify-buttons
+    (list
+
+     (image-button
+      "GO!" 620 650 "jumpy" (find-image "button.png")
+      (lambda (c)
+        (set! health 50)
+        (set! start-time (time))
+        (set! hint-time 100)
+        (set! edible-score 0)
+        (set! toxic-score 0)
+        (nightjar-game c)))
+
+     )
+    c)))
 
 (define (nightjar-game c)
   (every-frame (render-game))
@@ -272,37 +314,37 @@
       (set! ctx.fillStyle "#fff")
       (ctx.fillText (string-append "Similarity:" (number-display (pop-similarity)) "%") 20 700)
 
-      (when (> hint-time hint-dur)
-            (when (< (modulo hint-time 2) 1)
-                  (for-each
-                   (lambda (b)
-                     (let ((pos (butterfly-screen-pos b)))
-                       (set! ctx.strokeStyle "#f00")
-                       (set! ctx.fillStyle "#f00")
-                       (set! ctx.lineWidth 5)
-                       (ctx.beginPath)
-                       (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
-                       (ctx.closePath)
-                       (ctx.stroke)
-                       (set! ctx.font "bold 40pt amatic")
-                       (ctx.fillText "TOXIC!!" (- (vx pos) 50) (- (vy pos) 60))
-                       ))
-                   (list-ref butterfly-list 1))
-                  (for-each
-                   (lambda (b)
-                     (let ((pos (butterfly-screen-pos b)))
-                       (set! ctx.strokeStyle "#0f0")
-                       (set! ctx.fillStyle "#0f0")
-                       (set! ctx.lineWidth 5)
-                       (ctx.beginPath)
-                       (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
-                       (ctx.closePath)
-                       (ctx.stroke)
-                       (set! ctx.font "bold 40pt amatic")
-                       (ctx.fillText "Edible" (- (vx pos) 50) (- (vy pos) 60))
-                       ))
-                   (list-ref butterfly-list 0)))
-            (when (> hint-time (+ hint-dur 20)) (set! hint-time 0)))
+;      (when (> hint-time hint-dur)
+;            (when (< (modulo hint-time 2) 1)
+;                  (for-each
+;                   (lambda (b)
+;                     (let ((pos (butterfly-screen-pos b)))
+;                       (set! ctx.strokeStyle "#f00")
+;                       (set! ctx.fillStyle "#f00")
+;                       (set! ctx.lineWidth 5)
+;                       (ctx.beginPath)
+;                       (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
+;                       (ctx.closePath)
+;                       (ctx.stroke)
+;                       (set! ctx.font "bold 40pt amatic")
+;                       (ctx.fillText "TOXIC!!" (- (vx pos) 50) (- (vy pos) 60))
+;                       ))
+;                   (list-ref butterfly-list 1))
+;                  (for-each
+;                   (lambda (b)
+;                     (let ((pos (butterfly-screen-pos b)))
+;                       (set! ctx.strokeStyle "#0f0")
+;                       (set! ctx.fillStyle "#0f0")
+;                       (set! ctx.lineWidth 5)
+;                       (ctx.beginPath)
+;                       (ctx.arc (vx pos) (vy pos) 50 0 (* Math.PI 2) true)
+;                       (ctx.closePath)
+;                       (ctx.stroke)
+;                       (set! ctx.font "bold 40pt amatic")
+;                       (ctx.fillText "Edible" (- (vx pos) 50) (- (vy pos) 60))
+;                       ))
+;                   (list-ref butterfly-list 0)))
+;            (when (> hint-time (+ hint-dur 20)) (set! hint-time 0)))
 
       (set! ctx.fillStyle "#fff")
       (set! ctx.font "bold 20pt amatic")
