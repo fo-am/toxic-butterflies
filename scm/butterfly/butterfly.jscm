@@ -11,20 +11,19 @@
    "idle" ;; state
    20)) ;; speed
 
-(define (toxic-demo-butterfly expr)
+(define (demo-butterfly pos dir fuzz tex turn speed)
+  (list pos dir fuzz tex () turn "demo" speed))
+
+(define (example-butterfly expr)
   (list
-   (vector 0 0 0) ;; pos
-   (vector 0 1 0) ;; dir
+   (vector 0 0 15)
+   (vector 0 1 0)
    (rndf) ;; fuzz
    (expr-to-number expr)
    expr ;; texture
    (* 0.1 (- (rndf) 0.5))  ;; turn
    "idle" ;; state
-   20)) ;; speed
-
-
-(define (demo-butterfly pos dir fuzz tex turn speed)
-  (list pos dir fuzz tex () turn "demo" speed))
+   0)) ;; speed
 
 
 (define (butterfly-pos s) (list-ref s 0))

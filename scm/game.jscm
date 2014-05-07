@@ -53,18 +53,20 @@
 (define butterfly-list ())
 (define chromo ())
 (define toxic-expr ())
+(define toxic-example ())
 (define test-tex (build-list 32 (lambda (i) (load-texture (+ "patterns/" (+ i 1) ".png")))))
 (define bg-tex (load-texture "bg.png"))
 (define title-tex (load-texture "title.png"))
 (define flash 0)
 (define toxic-flash 0)
-(define health 50)
+(define health 100)
 (define hint-dur 100)
 (define hint-time 100)
 (define replenish-tick 0)
 (define start-time 0)
 (define edible-score 0)
 (define toxic-score 0)
+(define toxic-hit-time 1000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; population stuff
@@ -73,10 +75,11 @@
 (define (build-population)
   (set! chromo model)
   (set! toxic-expr (chromosome-express-toxic chromo))
+  (set! toxic-example (example-butterfly toxic-expr))
   (set! butterfly-list
         (list
          (list (butterfly (chromosome-express chromo)))
-         (list (toxic-demo-butterfly toxic-expr)))))
+         (list (butterfly toxic-expr)))))
 
 (define (build-demo-population fn)
   (set! chromo model)
@@ -138,6 +141,7 @@
                   (make-gobble (vx pos) (vy pos) 255 0 0 0.01)
                   (set! health (- health 15))
                   (set! toxic-flash 255)
+                  (set! toxic-hit-time 0)
                   (set! toxic-score (+ toxic-score 1)))))))))
 
 (define (replenish butterfly-list fn)
@@ -167,25 +171,6 @@
    (translate (vector 0 0 -100))
    (scale (vector 100 100 100))
    (draw-cube)))
-
-(define (render-toxic)
-
-  (with-state
-
-   (render-butterfly (car (list-ref butterfly-list 1))))
-
-;  (with-state
-;   (texture title-tex)
-;   (translate (vector 10 -4.5 0))
-;   (scale (vector 18 18 18))
-;   (render-big-butterfly))
-
-  (with-state
-   (texture bg-tex)
-   (translate (vector 0 0 -100))
-   (scale (vector 100 100 100))
-   (draw-cube)))
-
 
 (define (render-game)
   (set! butterfly-list (map update-butterflies butterfly-list))
@@ -223,15 +208,12 @@
 
 
 (define (nightjar-show-toxic c)
-  (every-frame (render-toxic))
   (game-modify-render
    (lambda (ctx)
      (set! ctx.font "normal 40pt amatic")
-     (wrap-text ctx "You are a hungry bird and you need to eat butterflies..." 0 200)
-     (set! ctx.font "bold 40pt amatic")
-     (wrap-text ctx "This is a toxic butterfly" 0 300)
+     (wrap-text ctx "You are a hungry bird and you need to eat butterflies... but watch out for the toxic ones!" 0 200 600 80)
      (set! ctx.font "normal 30pt amatic")
-     (wrap-text ctx "Try to remember it's wing pattern and avoid clicking on butterflies of this type!" 0 500)
+     (wrap-text ctx "Tip - try to remember the wing patterns." 0 500)
 
      )
    (game-modify-buttons
@@ -307,7 +289,16 @@
       (when (and (< health 20) (< (modulo hint-time 2) 1))
             (set! ctx.fillStyle "#f00")
             (set! ctx.font "bold 40pt amatic")
-            (ctx.fillText "Health Is Low!" 600 400))
+            (wrap-text ctx "Health Is Low!" 0 400))
+
+      (when (and (< toxic-hit-time 100))
+            (set! toxic-hit-time (+ toxic-hit-time 1))
+            (set! ctx.fillStyle "#f00")
+            (set! ctx.font "bold 60pt amatic")
+            (draw-toxic-bg ctx)
+            (set! ctx.fillStyle "#fff")
+            (wrap-text ctx "Ouch - this is a toxic butterfly!" 0 150 500 100)
+            (render-butterfly toxic-example))
 
 
       (set! ctx.font "bold 40pt amatic")
