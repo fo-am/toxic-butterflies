@@ -256,6 +256,7 @@
         (set! hint-time 100)
         (set! edible-score 0)
         (set! toxic-score 0)
+        (set! toxic-hit-time 1000)
         (nightjar-game c)))
 
      )
