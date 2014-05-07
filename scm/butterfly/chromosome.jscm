@@ -93,18 +93,15 @@
     a b)
    (length a)))
 
-
-
 (define (chromosome-express-toxic chromo)
   (let ((num-alleles-on (+ 2 (random (- (length chromo) 2)))))
-    (msg num-alleles-on)
     (let ((choice
            (shuffle
             (append
              (build-list num-alleles-on (lambda (i) 0))
              (build-list (- (length chromo) num-alleles-on) (lambda (i) 1))))))
       (msg choice)
-      (dbg (map2
-            (lambda (choice gene)
-              (allele-id (list-ref gene choice)))
-            choice chromo)))))
+      ((map2
+        (lambda (choice gene)
+          (allele-id (list-ref gene choice)))
+        choice chromo)))))

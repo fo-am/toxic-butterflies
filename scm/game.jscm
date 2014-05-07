@@ -20,7 +20,7 @@
 (load "scm/butterfly/gui.jscm")
 (load "scm/butterfly/butterfly.jscm")
 
-(define model
+(define (model)
   (list
    (gene-normalise
     (list (allele "dennis-patch-on" 0.5)
@@ -73,20 +73,28 @@
 
 
 (define (build-population)
-  (set! chromo model)
+  (set! chromo (model))
   (set! toxic-expr (chromosome-express-toxic chromo))
   (set! toxic-example (example-butterfly toxic-expr))
   (set! butterfly-list
         (list
-         (list (butterfly (chromosome-express chromo)))
-         (list (butterfly toxic-expr)))))
+         (list (butterfly (chromosome-express chromo))
+               (butterfly (chromosome-express chromo)))
+         (list))))
 
 (define (build-demo-population fn)
-  (set! chromo model)
+  (set! chromo (model))
   (set! toxic-expr (chromosome-express-toxic chromo))
   (set! butterfly-list
         (list
          (build-list 15 fn))))
+
+(define (build-comparison-population)
+  (set! butterfly-list
+        (list
+         (build-list 10 (lambda (i) (comp-butterfly (- (* i 1.9) 8) 2 (chromosome-express (model)))))
+         (build-list 10 (lambda (i) (comp-butterfly (- (* i 1.9) 8) -4 (chromosome-express chromo)))))))
+
 
 (define (pop-similarity)
   (*
@@ -182,6 +190,27 @@
    (scale (vector 100 100 100))
    (draw-cube)))
 
+(define (render-comparison)
+  (for-each render-butterflies butterfly-list)
+
+  (with-state
+   (translate (vector 0 -0.6 0))
+   (scale (vector 0.75 0.75 0.75))
+   (render-butterfly toxic-example))
+
+;  (with-state
+;   (texture title-tex)
+;   (translate (vector 10 -4.5 0))
+;   (scale (vector 18 18 18))
+;   (render-big-butterfly))
+
+  (with-state
+   (texture bg-tex)
+   (translate (vector 0 0 -100))
+   (scale (vector 100 100 100))
+   (draw-cube)))
+
+
 (define (nightjar-intro c)
   (every-frame (render-intro))
   (build-demo-population
@@ -222,7 +251,7 @@
      (image-button
       "GO!" 620 650 "jumpy" (find-image "button.png")
       (lambda (c)
-        (set! health 50)
+        (set! health 100)
         (set! start-time (time))
         (set! hint-time 100)
         (set! edible-score 0)
@@ -238,7 +267,6 @@
    (lambda (t c)
      (if (< health 1)
          (begin
-           (msg "done!")
            (nightjar-game-over c))
          c))
   (game-modify-mouse-hook
@@ -297,8 +325,10 @@
             (set! ctx.font "bold 60pt amatic")
             (draw-toxic-bg ctx)
             (set! ctx.fillStyle "#fff")
-            (wrap-text ctx "Ouch - this is a toxic butterfly!" 0 150 500 100)
-            (render-butterfly toxic-example))
+            (wrap-text ctx "Ouch - this is a toxic butterfly!" 0 200 500 100)
+            (with-state
+             (translate (vector 0 -0.6 0))
+             (render-butterfly toxic-example)))
 
 
       (set! ctx.font "bold 40pt amatic")
@@ -365,6 +395,8 @@
      c)))))
 
 (define (nightjar-game-over c)
+  (build-comparison-population)
+  (every-frame (render-comparison))
   (let ((score (number-display (- (time) start-time))))
     (game-modify-update
      (lambda (t c) c)
@@ -373,19 +405,20 @@
       (game-modify-render
        (lambda (ctx)
          (set! ctx.font "normal 40pt amatic")
-         (wrap-text ctx "Game Over" 0 300)
+         (wrap-text ctx "Game Over" 0 100)
          (set! ctx.font "bold 40pt amatic")
-         (wrap-text ctx (string-append "You survived " score " seconds") 0 380)
+         (wrap-text ctx (string-append "You survived " score " seconds") 0 170)
          (set! ctx.font "normal 35pt amatic")
-         (wrap-text ctx (string-append "The edible butterflies became " (number-display (pop-similarity)) "% similar to the toxic species") 0 460)
-         (wrap-text ctx (string-append "You ate " edible-score " edible butterflies and " toxic-score " toxic butterflies.") 0 540)
+         (wrap-text ctx "At the beginning the edible species looked like this:" 0 250)
+         (wrap-text ctx "The toxic species all looked like this" 0 400)
+         (wrap-text ctx "At the end the edible species looked like this:" 0 550)
 
 
          (set! ctx.font "normal 40pt amatic"))
        (game-modify-buttons
         (list
          (image-button
-          "Done" 600 650 "jumpy" (find-image "button.png")
+          "Done" 600 750 "jumpy" (find-image "button.png")
           (lambda (c)
             (nightjar-intro c)))
          )

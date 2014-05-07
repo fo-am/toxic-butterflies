@@ -25,6 +25,16 @@
    "idle" ;; state
    0)) ;; speed
 
+(define (comp-butterfly x y expr)
+  (list
+   (vector x y 0)
+   (vector 0 1 0)
+   (rndf) ;; fuzz
+   (expr-to-number expr)
+   expr ;; texture
+   (* 0.1 (- (rndf) 0.5))  ;; turn
+   "idle" ;; state
+   0)) ;; speed
 
 (define (butterfly-pos s) (list-ref s 0))
 (define (butterfly-modify-pos s v) (list-replace s 0 v))
@@ -99,7 +109,7 @@
    (with-state
     (rotate (vector 180 0 0))
     (translate (vector 0 0 -0.5))
-    (let ((a (+ 90 (* 40 (+ 1 (sin (* (butterfly-speed s)
+    (let ((a (- 90 (* 40 (+ 1 (sin (* (butterfly-speed s)
                                       (+ (butterfly-fuzz s) (time)))))))))
       (with-state
        (rotate (vector 0 0 a))
@@ -134,6 +144,8 @@
    (lambda (p)
      (render-butterfly p))
    s))
+
+
 
 ;; set the one shader
 (shader
