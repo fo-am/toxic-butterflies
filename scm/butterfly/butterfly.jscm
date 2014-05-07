@@ -34,7 +34,7 @@
    expr ;; texture
    (* 0.1 (- (rndf) 0.5))  ;; turn
    "idle" ;; state
-   0)) ;; speed
+   (* 20 (rndf)))) ;; speed
 
 (define (butterfly-pos s) (list-ref s 0))
 (define (butterfly-modify-pos s v) (list-replace s 0 v))
