@@ -19,8 +19,8 @@
      (mat4.identity (mat4.create))
      (build-shader
       gl
-      blinn-vertex-shader
-      blinn-fragment-shader
+      vertex-shader
+      fragment-shader
       )
      (vector 1 1 1)
      "")))

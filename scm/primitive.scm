@@ -78,10 +78,10 @@
       (gl.vertexAttribPointer shader.vertexPositionAttribute
                               pvb.itemSize
                               gl.FLOAT false 0 0)
-      (gl.bindBuffer gl.ARRAY_BUFFER nvb)
-      (gl.vertexAttribPointer shader.vertexNormalAttribute
-                              nvb.itemSize
-                              gl.FLOAT false 0 0)
+  ;;    (gl.bindBuffer gl.ARRAY_BUFFER nvb)
+  ;;    (gl.vertexAttribPointer shader.vertexNormalAttribute
+  ;;                            nvb.itemSize
+  ;;                            gl.FLOAT false 0 0)
       (gl.bindBuffer gl.ARRAY_BUFFER tvb)
       (gl.vertexAttribPointer shader.vertexTextureAttribute
                               tvb.itemSize
@@ -89,15 +89,15 @@
       (if (eq? texture "")
           (bind-texture gl shader "/static/textures/white.png")
           (bind-texture gl shader texture))
-      (gl.uniform3fv shader.AmbientColour (vector 0 0 0))
-      (gl.uniform3fv shader.DiffuseColour colour)
-      (gl.uniform3fv shader.SpecularColour (vector 0 0 0))
-      (gl.uniform3fv shader.LightPos (vector 2 400 -100))
-      (gl.uniform1f shader.Roughness 1)
+;;      (gl.uniform3fv shader.AmbientColour (vector 0 0 0))
+;;      (gl.uniform3fv shader.DiffuseColour colour)
+;;      (gl.uniform3fv shader.SpecularColour (vector 0 0 0))
+;;      (gl.uniform3fv shader.LightPos (vector 2 400 -100))
+;;      (gl.uniform1f shader.Roughness 1)
 
       (gl.uniformMatrix4fv shader.ViewMatrixUniform false view)
       (gl.uniformMatrix4fv shader.CameraMatrixUniform false camera)
       (gl.uniformMatrix4fv shader.LocalMatrixUniform false local)
-      (gl.uniformMatrix4fv shader.NormalMatrixUniform false local)
+;;      (gl.uniformMatrix4fv shader.NormalMatrixUniform false local)
       (gl.drawArrays gl.TRIANGLES 0 pvb.numItems)
       )))

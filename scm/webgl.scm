@@ -101,7 +101,7 @@
               (set! shader-program.NormalMatrixUniform
                     (gl.getUniformLocation shader-program "NormalMatrix")))
 
-        (when (gl.getUniformLocation shader-program "NormalMatrix")
+        (when (gl.getUniformLocation shader-program "AmbientColour")
               (set! shader-program.AmbientColour
                     (gl.getUniformLocation shader-program "AmbientColour")))
         (when (gl.getUniformLocation shader-program "DiffuseColour")

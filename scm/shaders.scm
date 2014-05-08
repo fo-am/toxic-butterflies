@@ -114,3 +114,36 @@ void main()
        vec4 ln = vec4(n, 1.0);
        colour = vec3(0.5,0.5,1)*max(0.0,dot(vec4(0.85, 0.8, 0.75, 1.0),ln));
    }")
+
+
+;; game shader...
+
+(define vertex-shader
+  "
+precision mediump float;
+varying vec3 P;
+varying vec3 T;
+uniform mat4 ViewMatrix;
+uniform mat4 CameraMatrix;
+uniform mat4 LocalMatrix;
+attribute vec3 p;
+attribute vec3 t;
+void main()
+{
+    mat4 ModelViewMatrix = ViewMatrix * CameraMatrix * LocalMatrix;
+    P = p.xyz;
+    T = t;
+    gl_Position = ModelViewMatrix * vec4(p,1);
+}")
+
+(define fragment-shader
+  "
+precision mediump float;
+varying vec3 P;
+varying vec3 T;
+uniform sampler2D texture;
+void main() {
+ gl_FragColor = texture2D(texture,vec2(T.s,T.t));
+
+}
+")

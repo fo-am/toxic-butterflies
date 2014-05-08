@@ -37,16 +37,34 @@
     (mat4.rotate (renderer-top-tx r) (* (vy v) 0.0174532925) (list 0 1 0))
     (mat4.rotate (renderer-top-tx r) (* (vz v) 0.0174532925) (list 0 0 1))))
 
+(define aim-matrix (mat4.create))
+
 (define (maim a u)
   (let ((c (vector 0 0 0)))
     (vec3.cross a u c)
 ;;    (vec3.normalize c)
-    (mat4.multiply (renderer-top-tx r)
-                   (mat4.create
-                    (list (vx a) (vy a) (vz a) 0
-                          (vx u) (vy u) (vz u) 0
-                          (vx c) (vy c) (vz c) 0
-                          0 0 0 1)))))
+
+    (js "aim_matrix[0]=vx(a);")
+    (js "aim_matrix[1]=vy(a);")
+    (js "aim_matrix[2]=vz(a);")
+    (js "aim_matrix[3]=0;")
+
+    (js "aim_matrix[4]=vx(u);")
+    (js "aim_matrix[5]=vy(u);")
+    (js "aim_matrix[6]=vz(u);")
+    (js "aim_matrix[7]=0;")
+
+    (js "aim_matrix[8]=vx(c);")
+    (js "aim_matrix[9]=vy(c);")
+    (js "aim_matrix[10]=vz(c);")
+    (js "aim_matrix[11]=0;")
+
+    (js "aim_matrix[12]=0;")
+    (js "aim_matrix[13]=0;")
+    (js "aim_matrix[14]=0;")
+    (js "aim_matrix[15]=1;")
+
+    (mat4.multiply (renderer-top-tx r) aim-matrix)))
 
 (define (camera-transform)
   (renderer-camera r))
