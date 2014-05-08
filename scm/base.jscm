@@ -102,6 +102,7 @@
 
 ;; fix js modulo irt negative numbers
 (define (modulo m n) (js "((m%n)+n)%n"))
+(define (quotient m n) (Math.floor (/ m n)))
 
 (define (sin a) (Math.sin a))
 (define (cos a) (Math.cos a))

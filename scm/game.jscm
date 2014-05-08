@@ -92,8 +92,16 @@
 (define (build-comparison-population)
   (set! butterfly-list
         (list
-         (build-list 10 (lambda (i) (comp-butterfly (- (* i 1.9) 8) 2 (chromosome-express (model)))))
-         (build-list 10 (lambda (i) (comp-butterfly (- (* i 1.9) 8) -4 (chromosome-express chromo)))))))
+         (build-list 25 (lambda (i)
+                          (comp-butterfly
+                           (- (* (modulo i 5) 1.9) 10)
+                           (+ (quotient i 5) -4)
+                           (chromosome-express (model)))))
+         (build-list 25 (lambda (i)
+                          (comp-butterfly
+                           (+ (* (modulo i 5) 1.9) 2)
+                           (+ (quotient i 5) -4)
+                           (chromosome-express chromo)))))))
 
 
 (define (pop-similarity)
@@ -194,7 +202,7 @@
   (for-each render-butterflies butterfly-list)
 
   (with-state
-   (translate (vector 0 -0.6 0))
+   (translate (vector 0 0.7 0))
    (scale (vector 0.75 0.75 0.75))
    (render-butterfly toxic-example))
 
@@ -410,9 +418,9 @@
          (set! ctx.font "bold 40pt amatic")
          (wrap-text ctx (string-append "You survived " score " seconds") 0 170)
          (set! ctx.font "normal 35pt amatic")
-         (wrap-text ctx "At the beginning the edible species looked like this:" 0 250)
-         (wrap-text ctx "The toxic species all looked like this" 0 400)
-         (wrap-text ctx "At the end the edible species looked like this:" 0 550)
+         (wrap-text ctx "The toxic species all had this pattern" 0 240)
+         (wrap-text ctx "The edible species at the start:" -350 360)
+         (wrap-text ctx "The edible species at the end:" 350 360)
 
 
          (set! ctx.font "normal 40pt amatic"))
