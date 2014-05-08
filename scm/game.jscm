@@ -39,6 +39,8 @@
           (allele "yellow-hw-bar-off" 0.5)))
    ))
 
+(define start-chromo (model))
+
 (define (expr-to-number expr)
   (parseInt
    (string-append
@@ -95,12 +97,12 @@
          (build-list 25 (lambda (i)
                           (comp-butterfly
                            (- (* (modulo i 5) 1.9) 10)
-                           (+ (quotient i 5) -4)
+                           (+ (quotient i 5) -3.5)
                            (chromosome-express (model)))))
          (build-list 25 (lambda (i)
                           (comp-butterfly
                            (+ (* (modulo i 5) 1.9) 2)
-                           (+ (quotient i 5) -4)
+                           (+ (quotient i 5) -3.5)
                            (chromosome-express chromo)))))))
 
 
@@ -318,8 +320,8 @@
                         255 127 200 (/ toxic-flash 255)))
 
 
-      (draw-chromosome ctx 50 50 chromo)
-      (draw-expr ctx 50 350 toxic-expr)
+      (draw-chromosome ctx 50 630 chromo)
+      ;;(draw-expr ctx 50 350 toxic-expr)
 
       (set! ctx.strokeStyle "#fff")
 
@@ -340,9 +342,9 @@
              (render-butterfly toxic-example)))
 
 
-      (set! ctx.font "bold 40pt amatic")
-      (set! ctx.fillStyle "#fff")
-      (ctx.fillText (string-append "Similarity:" (number-display (pop-similarity)) "%") 20 700)
+      ;;(set! ctx.font "bold 40pt amatic")
+      ;;(set! ctx.fillStyle "#fff")
+      ;;(ctx.fillText (string-append "Similarity:" (number-display (pop-similarity)) "%") 20 700)
 
 ;      (when (> hint-time hint-dur)
 ;            (when (< (modulo hint-time 2) 1)
@@ -379,26 +381,25 @@
       (set! ctx.fillStyle "#fff")
       (set! ctx.font "bold 20pt amatic")
 
-      (wrap-text ctx
-                 (string-append "Alelle decrease: " (number-display allele-decrease))
-                 -440 280 1000 1000)
+      ;;(wrap-text ctx
+      ;;           (string-append "Alelle decrease: " (number-display allele-decrease))
+      ;;           -440 280 1000 1000)
 
       (draw-gobble ctx)
       )
     (game-modify-buttons
      (list
-      (image-button
-       "" 80 280 "none" (find-image "plus.png")
-       (lambda (c)
-         (set! allele-decrease (+ allele-decrease 0.01))
-         c))
+;      (image-button
+;       "" 80 280 "none" (find-image "plus.png")
+;       (lambda (c)
+;         (set! allele-decrease (+ allele-decrease 0.01))
+;         c))
 
-      (image-button
-       "" 50 280 "none" (find-image "minus.png")
-       (lambda (c)
-         (set! allele-decrease (- allele-decrease 0.01))
-         c))
-
+;      (image-button
+;       "" 50 280 "none" (find-image "minus.png")
+;       (lambda (c)
+;         (set! allele-decrease (- allele-decrease 0.01))
+;         c))
 
       )
      c)))))
@@ -419,9 +420,12 @@
          (wrap-text ctx (string-append "You survived " score " seconds") 0 170)
          (set! ctx.font "normal 35pt amatic")
          (wrap-text ctx "The toxic species all had this pattern" 0 240)
-         (wrap-text ctx "The edible species at the start:" -350 360)
-         (wrap-text ctx "The edible species at the end:" 350 360)
+         (wrap-text ctx "The edible species at the start" -350 340)
+         (wrap-text ctx "The edible species at the end" 350 340)
 
+         (draw-chromosome ctx 190 640 start-chromo)
+         (draw-chromosome ctx 860 640 chromo)
+         (set! ctx.fillStyle "#fff")
 
          (set! ctx.font "normal 40pt amatic"))
        (game-modify-buttons
@@ -448,6 +452,12 @@
    "heliconius.png"
    "plus.png"
    "minus.png"
-   "button.png"))
+   "button.png"
+   "alelle-1.png"
+   "alelle-2.png"
+   "alelle-3.png"
+   "alelle-4.png"
+   "alelle-5.png"
+   ))
  (lambda ()
    (start-game canvas ctx)))
