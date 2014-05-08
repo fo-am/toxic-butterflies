@@ -1,6 +1,6 @@
 ;; -*- mode: scheme; -*-
 
-(define allele-decrease 0.1)
+(define allele-decrease 0.2)
 
 (define (allele id probability)
   (list id probability))
