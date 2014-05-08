@@ -200,7 +200,15 @@
    (scale (vector 100 100 100))
    (draw-cube)))
 
+(define comp-time 0)
+
 (define (render-comparison)
+  (set! butterfly-list
+        (list
+         (update-comp-butterflies (list-ref butterfly-list 0) 0.01)
+         (update-comp-butterflies (list-ref butterfly-list 1)
+                                  (if (< (- (time) comp-time) 2) 0 0.01))))
+
   (for-each render-butterflies butterfly-list)
 
   (with-state
@@ -406,6 +414,7 @@
      c)))))
 
 (define (nightjar-game-over c)
+  (set! comp-time (time))
   (build-comparison-population)
   (every-frame (render-comparison))
   (let ((score (number-display (- (time) start-time))))

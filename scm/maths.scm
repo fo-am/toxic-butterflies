@@ -68,3 +68,7 @@
 
 (define (rndvec) (vector (rndf) (rndf) (rndf)))
 (define (crndvec) (vsub (rndvec) (vector 0.5 0.5 0.5)))
+
+(define (hcrndvec s)
+  (let ((a (* (rndf) 360)))
+    (vector (* s (sin a)) (* s (cos a)) 0)))

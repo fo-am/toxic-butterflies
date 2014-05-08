@@ -26,15 +26,19 @@
    0)) ;; speed
 
 (define (comp-butterfly x y expr)
-  (list
-   (vector x y 0)
-   (vector 0 1 0)
-   (rndf) ;; fuzz
-   (expr-to-number expr)
-   expr ;; texture
-   (* 0.1 (- (rndf) 0.5))  ;; turn
-   "idle" ;; state
-   (* 20 (rndf)))) ;; speed
+  (let ((pos (hcrndvec 20)))
+    (list
+     pos ;; pos
+     (vnormalise (vsub (vector x y 0) pos))
+     (rndf) ;; fuzz
+     (expr-to-number expr)
+     expr ;; texture
+     (* 0.1 (- (rndf) 0.5))  ;; turn
+     "idle" ;; state
+     (+ 10 (* (rndf) 20))
+     (vector x y 0)
+     (vector 0 1 0)
+     0)))
 
 (define (butterfly-pos s) (list-ref s 0))
 (define (butterfly-modify-pos s v) (list-replace s 0 v))
@@ -49,6 +53,10 @@
 (define (butterfly-modify-state s v) (list-replace s 6 v))
 (define (butterfly-speed s) (list-ref s 7))
 (define (butterfly-modify-speed s v) (list-replace s 7 v))
+(define (butterfly-target-pos s) (list-ref s 8))
+(define (butterfly-target-dir s) (list-ref s 9))
+(define (butterfly-target-time s) (list-ref s 10))
+(define (butterfly-modify-target-time s v) (list-replace s 10 v))
 
 (define safe-distance 10)
 
@@ -96,6 +104,28 @@
   (map
    (lambda (b)
      (update-butterfly b))
+   b))
+
+(define (blend-into a b d)
+  (vadd a (vmul (vsub b a) d)))
+
+(define (update-comp-butterfly s d)
+  (if (> (butterfly-target-time s) 1)
+      s
+      (butterfly-modify-pos
+       (butterfly-modify-dir
+        (butterfly-modify-target-time s (+ (butterfly-target-time s)
+                                           (* d (butterfly-speed s) 0.01)))
+        (vnormalise (vlerp
+                     (butterfly-dir s)
+                     (butterfly-target-dir s)
+                     (butterfly-target-time s))))
+       (vlerp (butterfly-pos s) (butterfly-target-pos s) (butterfly-target-time s)))))
+
+(define (update-comp-butterflies b d)
+  (map
+   (lambda (b)
+     (update-comp-butterfly b d))
    b))
 
 (define (render-butterfly s)
