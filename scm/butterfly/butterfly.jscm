@@ -112,17 +112,20 @@
   (vadd a (vmul (vsub b a) d)))
 
 (define (update-comp-butterfly s d)
-  (if (> (butterfly-target-time s) 1)
-      (butterfly-modify-flap-amount s (* (butterfly-flap-amount s) 0.9))
-      (butterfly-modify-pos
-       (butterfly-modify-dir
-        (butterfly-modify-target-time s (+ (butterfly-target-time s)
-                                           (* d (butterfly-speed s) 0.01)))
-        (vnormalise (vlerp
-                     (butterfly-dir s)
-                     (butterfly-target-dir s)
-                     (butterfly-target-time s))))
-       (vlerp (butterfly-pos s) (butterfly-target-pos s) (butterfly-target-time s)))))
+  (butterfly-modify-flap-amount
+   (if (> (butterfly-target-time s) 1)
+       s
+       (butterfly-modify-pos
+        (butterfly-modify-dir
+         (butterfly-modify-target-time s (+ (butterfly-target-time s)
+                                            (* d (butterfly-speed s) 0.01)))
+         (vnormalise (vlerp
+                      (butterfly-dir s)
+                      (butterfly-target-dir s)
+                      (butterfly-target-time s))))
+        (vlerp (butterfly-pos s) (butterfly-target-pos s) (butterfly-target-time s))))
+   (* (butterfly-flap-amount s) 0.995)))
+
 
 (define (update-comp-butterflies b d)
   (map
