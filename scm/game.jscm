@@ -334,7 +334,7 @@
             (set! ctx.font "bold 60pt amatic")
             (draw-toxic-bg ctx)
             (set! ctx.fillStyle "#fff")
-            (wrap-text ctx "Ouch - this is a toxic butterfly!" 0 200 500 100)
+            (wrap-text ctx "Ouch!" 0 200 500 100)
             (with-state
              (translate (vector 0 -0.6 0))
              (render-butterfly toxic-example)))
