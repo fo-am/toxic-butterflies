@@ -250,7 +250,8 @@
   (game-modify-render
    (lambda (ctx)
      (set! ctx.font "normal 40pt amatic")
-     (wrap-text ctx "You are a hungry bird and you need to eat butterflies... but watch out for the toxic ones!" 0 200 600 80)
+     (wrap-text ctx "You are a hungry bird and you need to eat butterflies..." 0 200)
+     (wrap-text ctx "Watch out for the toxic ones!" 0 280)
      (set! ctx.font "normal 30pt amatic")
      (wrap-text ctx "Tip - try to remember the wing patterns." 0 500)
 
