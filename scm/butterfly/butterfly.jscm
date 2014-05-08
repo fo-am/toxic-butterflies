@@ -9,10 +9,10 @@
    expr ;; texture
    (* 0.1 (- (rndf) 0.5))  ;; turn
    "idle" ;; state
-   20)) ;; speed
+   20 40)) ;; speed
 
 (define (demo-butterfly pos dir fuzz tex turn speed)
-  (list pos dir fuzz tex () turn "demo" speed))
+  (list pos dir fuzz tex () turn "demo" speed 40))
 
 (define (example-butterfly expr)
   (list
@@ -23,7 +23,7 @@
    expr ;; texture
    (* 0.1 (- (rndf) 0.5))  ;; turn
    "idle" ;; state
-   0)) ;; speed
+   0 40)) ;; speed
 
 (define (comp-butterfly x y expr)
   (let ((pos (hcrndvec 20)))
@@ -35,7 +35,7 @@
      expr ;; texture
      (* 0.1 (- (rndf) 0.5))  ;; turn
      "idle" ;; state
-     (+ 10 (* (rndf) 20))
+     (+ 10 (* (rndf) 20)) 40
      (vector x y 0)
      (vector 0 1 0)
      0)))
@@ -53,10 +53,12 @@
 (define (butterfly-modify-state s v) (list-replace s 6 v))
 (define (butterfly-speed s) (list-ref s 7))
 (define (butterfly-modify-speed s v) (list-replace s 7 v))
-(define (butterfly-target-pos s) (list-ref s 8))
-(define (butterfly-target-dir s) (list-ref s 9))
-(define (butterfly-target-time s) (list-ref s 10))
-(define (butterfly-modify-target-time s v) (list-replace s 10 v))
+(define (butterfly-flap-amount s) (list-ref s 8))
+(define (butterfly-modify-flap-amount s v) (list-replace s 8 v))
+(define (butterfly-target-pos s) (list-ref s 9))
+(define (butterfly-target-dir s) (list-ref s 10))
+(define (butterfly-target-time s) (list-ref s 11))
+(define (butterfly-modify-target-time s v) (list-replace s 11 v))
 
 (define safe-distance 10)
 
@@ -111,7 +113,7 @@
 
 (define (update-comp-butterfly s d)
   (if (> (butterfly-target-time s) 1)
-      s
+      (butterfly-modify-flap-amount s (* (butterfly-flap-amount s) 0.9))
       (butterfly-modify-pos
        (butterfly-modify-dir
         (butterfly-modify-target-time s (+ (butterfly-target-time s)
@@ -139,8 +141,9 @@
    (with-state
     (rotate (vector 180 0 0))
     (translate (vector 0 0 -0.5))
-    (let ((a (- 90 (* 40 (+ 1 (sin (* (butterfly-speed s)
-                                      (+ (butterfly-fuzz s) (time)))))))))
+    (let ((a (- 90 (* (butterfly-flap-amount s)
+                      (+ 1 (sin (* (butterfly-speed s)
+                                   (+ (butterfly-fuzz s) (time)))))))))
       (with-state
        (rotate (vector 0 0 a))
        (draw-obj 3))
