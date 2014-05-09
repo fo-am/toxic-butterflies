@@ -390,25 +390,25 @@
       (set! ctx.fillStyle "#fff")
       (set! ctx.font "bold 20pt amatic")
 
-      ;;(wrap-text ctx
-      ;;           (string-append "Alelle decrease: " (number-display allele-decrease))
-      ;;           -440 280 1000 1000)
+      (wrap-text ctx
+                 (string-append "Alelle decrease: " (number-display allele-decrease))
+                 -440 280 1000 1000)
 
       (draw-gobble ctx)
       )
     (game-modify-buttons
      (list
-;      (image-button
-;       "" 80 280 "none" (find-image "plus.png")
-;       (lambda (c)
-;         (set! allele-decrease (+ allele-decrease 0.01))
-;         c))
+      (image-button
+       "" 80 280 "none" (find-image "plus.png")
+       (lambda (c)
+         (set! allele-decrease (+ allele-decrease 0.01))
+         c))
 
-;      (image-button
-;       "" 50 280 "none" (find-image "minus.png")
-;       (lambda (c)
-;         (set! allele-decrease (- allele-decrease 0.01))
-;         c))
+      (image-button
+       "" 50 280 "none" (find-image "minus.png")
+       (lambda (c)
+         (set! allele-decrease (- allele-decrease 0.01))
+         c))
 
       )
      c)))))

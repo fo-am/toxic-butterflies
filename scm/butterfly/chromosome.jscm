@@ -1,6 +1,6 @@
 ;; -*- mode: scheme; -*-
 
-(define allele-decrease 0.2)
+(define allele-decrease 0.1)
 
 (define (allele id probability)
   (list id probability))
@@ -41,7 +41,7 @@
        (list 0 #f)
        gene)))))
 
-(define (gene-remove-expression gene genome)
+(define (gene-remove-expression-old gene genome)
   (gene-normalise
    (map
     (lambda (allele)
@@ -51,6 +51,26 @@
            (max 0 (- (allele-probability allele) allele-decrease)))
           allele))
     gene)))
+
+;; min(p,(1-p))*0.1
+
+(define (calc-decrease p)
+  (* (min p (- 1 p)) allele-decrease))
+
+(define (gene-remove-expression gene genome)
+  (if (eq? (allele-id (car gene)) genome)
+      (let ((dec (calc-decrease (allele-probability (car gene)))))
+        (list
+         (allele-modify-probability
+          (car gene) (- (allele-probability (car gene)) dec))
+         (allele-modify-probability
+          (cadr gene) (+ (allele-probability (car gene)) dec))))
+      (let ((dec (calc-decrease (allele-probability (cadr gene)))))
+        (list
+         (allele-modify-probability
+          (car gene) (+ (allele-probability (car gene)) dec))
+         (allele-modify-probability
+          (cadr gene) (- (allele-probability (car gene)) dec))))))
 
 ;; a chromosome is simple a list of genes
 ;; returns a genome
