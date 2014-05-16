@@ -99,8 +99,8 @@
   (set! toxic-example (example-butterfly toxic-expr))
   (set! butterfly-list
         (list
-         (list (butterfly (chromosome-express chromo))
-               (butterfly (chromosome-express chromo)))
+         (list (butterfly "edible" (chromosome-express chromo))
+               (butterfly "edible" (chromosome-express chromo)))
          (list))))
 
 (define (build-demo-population fn)
@@ -181,15 +181,15 @@
                   (set! toxic-hit-time 0)
                   (set! toxic-score (+ toxic-score 1)))))))))
 
-(define (replenish butterfly-list fn)
+(define (replenish type butterfly-list fn)
   (if (< (length butterfly-list) pop-size)
-      (cons (butterfly (fn)) butterfly-list)
+      (cons (butterfly type (fn)) butterfly-list)
       butterfly-list))
 
 (define (replenish-butterflies butterfly-list)
   (list
-   (replenish (list-ref butterfly-list 0) (lambda () (chromosome-express chromo)))
-   (replenish (list-ref butterfly-list 1) (lambda () toxic-expr))))
+   (replenish "edible" (list-ref butterfly-list 0) (lambda () (chromosome-express chromo)))
+   (replenish "toxic" (list-ref butterfly-list 1) (lambda () toxic-expr))))
 
 
 
@@ -316,7 +316,7 @@
            (when (not (zero? found))
                  (set! butterfly-list
                        (list
-                        (replenish (list-ref butterfly-list 0) (lambda () (chromosome-express chromo)))
+                        (replenish "edible" (list-ref butterfly-list 0) (lambda () (chromosome-express chromo)))
                         (list-ref butterfly-list 1)))
                  (set! found 0)))
 

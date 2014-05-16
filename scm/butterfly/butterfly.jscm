@@ -1,7 +1,8 @@
 ;; -*- mode: scheme; -*-
 
-(define (butterfly expr)
+(define (butterfly type expr)
   (list
+   type
    (vmul (crndvec) 15) ;; pos
    (vnormalise (crndvec)) ;; dir
    (rndf) ;; fuzz
@@ -12,10 +13,11 @@
    20 40)) ;; speed
 
 (define (demo-butterfly pos dir fuzz tex turn speed)
-  (list pos dir fuzz tex () turn "demo" speed 40))
+  (list "demo" pos dir fuzz tex () turn "demo" speed 40))
 
 (define (example-butterfly expr)
   (list
+   "example"
    (vector 0 0 15)
    (vector 0 1 0)
    (rndf) ;; fuzz
@@ -28,6 +30,7 @@
 (define (comp-butterfly x y expr)
   (let ((pos (hcrndvec 20)))
     (list
+     "comp"
      pos ;; pos
      (vnormalise (vsub (vector x y 0) pos))
      (rndf) ;; fuzz
@@ -40,25 +43,28 @@
      (vector 0 1 0)
      0)))
 
-(define (butterfly-pos s) (list-ref s 0))
-(define (butterfly-modify-pos s v) (list-replace s 0 v))
-(define (butterfly-dir s) (list-ref s 1))
-(define (butterfly-modify-dir s v) (list-replace s 1 v))
-(define (butterfly-fuzz s) (list-ref s 2))
-(define (butterfly-texture s) (list-ref s 3))
-(define (butterfly-expr s) (list-ref s 4))
-(define (butterfly-turn s) (list-ref s 5))
-(define (butterfly-modify-turn s v) (list-replace s 5 v))
-(define (butterfly-state s) (list-ref s 6))
-(define (butterfly-modify-state s v) (list-replace s 6 v))
-(define (butterfly-speed s) (list-ref s 7))
-(define (butterfly-modify-speed s v) (list-replace s 7 v))
-(define (butterfly-flap-amount s) (list-ref s 8))
-(define (butterfly-modify-flap-amount s v) (list-replace s 8 v))
-(define (butterfly-target-pos s) (list-ref s 9))
-(define (butterfly-target-dir s) (list-ref s 10))
-(define (butterfly-target-time s) (list-ref s 11))
-(define (butterfly-modify-target-time s v) (list-replace s 11 v))
+(define (butterfly-type s) (list-ref s 0))
+(define (butterfly-pos s) (list-ref s 1))
+(define (butterfly-modify-pos s v) (list-replace s 1 v))
+(define (butterfly-dir s) (list-ref s 2))
+(define (butterfly-modify-dir s v) (list-replace s 2 v))
+(define (butterfly-fuzz s) (list-ref s 3))
+(define (butterfly-texture s) (list-ref s 4))
+(define (butterfly-modify-texture s v) (list-replace s 4 v))
+(define (butterfly-expr s) (list-ref s 5))
+(define (butterfly-modify-expr s v) (list-replace s 5 v))
+(define (butterfly-turn s) (list-ref s 6))
+(define (butterfly-modify-turn s v) (list-replace s 6 v))
+(define (butterfly-state s) (list-ref s 7))
+(define (butterfly-modify-state s v) (list-replace s 7 v))
+(define (butterfly-speed s) (list-ref s 8))
+(define (butterfly-modify-speed s v) (list-replace s 8 v))
+(define (butterfly-flap-amount s) (list-ref s 9))
+(define (butterfly-modify-flap-amount s v) (list-replace s 9 v))
+(define (butterfly-target-pos s) (list-ref s 10))
+(define (butterfly-target-dir s) (list-ref s 11))
+(define (butterfly-target-time s) (list-ref s 12))
+(define (butterfly-modify-target-time s v) (list-replace s 12 v))
 
 (define safe-distance 10)
 
@@ -75,7 +81,14 @@
 
      ((eq? state "idle")
       (if (> (vmag (butterfly-pos s)) safe-distance)
-          (butterfly-modify-state s "re-centre")
+          ;; change pattern when off screen!
+          (let ((new-expr (chromosome-express chromo)))
+            (butterfly-modify-state
+             (if (eq? (butterfly-type s) "edible")
+                 (butterfly-modify-texture
+                  (butterfly-modify-expr s new-expr)
+                  (expr-to-number new-expr)) s)
+             "re-centre"))
           (if (< (rndf) 0.99)
               s
               (butterfly-modify-turn
