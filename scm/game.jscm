@@ -20,7 +20,7 @@
 (load "scm/butterfly/gui.jscm")
 (load "scm/butterfly/butterfly.jscm")
 
-(define (model)
+(define (model-old)
   (list
    (gene-normalise
     (list (allele "dennis-patch-on" 0.5)
@@ -39,9 +39,17 @@
           (allele "yellow-hw-bar-off" 0.5)))
    ))
 
+(define (model)
+  (list
+    (list (allele "dennis-patch" 0.333)
+          (allele "hw-rays" 0.333)
+          (allele "red-fw-band" 0.333))
+    (list (allele "yellow-fw-band" 0.5)
+          (allele "yellow-hw-bar" 0.5))))
+
 (define start-chromo (model))
 
-(define (expr-to-number expr)
+(define (expr-to-number-old expr)
   (parseInt
    (string-append
     (if (eq? (list-ref expr 0) "dennis-patch-on") "0" "1")
@@ -50,6 +58,17 @@
     (if (eq? (list-ref expr 3) "yellow-fw-band-on") "0" "1")
     (if (eq? (list-ref expr 4) "yellow-hw-bar-on") "0" "1"))
    2))
+
+(define (expr-to-number expr)
+  (parseInt
+   (string-append
+    (if (eq? (list-ref expr 0) "dennis-patch") "0" "1")
+    (if (eq? (list-ref expr 0) "hw-rays") "0" "1")
+    (if (eq? (list-ref expr 0) "red-fw-band") "0" "1")
+    (if (eq? (list-ref expr 1) "yellow-fw-band") "0" "1")
+    (if (eq? (list-ref expr 1) "yellow-hw-bar") "0" "1"))
+   2))
+
 
 (define pop-size 15)
 (define butterfly-list ())

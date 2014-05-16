@@ -2,6 +2,7 @@
 
 (define allele-decrease 0.1)
 
+;; an allele is a string id and a probability
 (define (allele id probability)
   (list id probability))
 
@@ -10,7 +11,6 @@
 (define (allele-modify-probability a v) (list-replace a 1 v))
 
 ;; a gene is simply a list of alleles
-
 (define (gene-cumulative gene)
   (foldl (lambda (a b) (+ a b)) 0 (map (lambda (a) (cadr a)) gene)))
 
@@ -19,6 +19,7 @@
    ((< v min) min)
    ((> v max) max)   (else v)))
 
+;; divide by total to normalise the probability, and clamp to prevent fixing
 (define (gene-normalise gene)
   (let ((total (gene-cumulative gene)))
     (map (lambda (allele)
@@ -27,6 +28,7 @@
             (clamp (/ (allele-probability allele) total) 0.05 0.95)))
          gene)))
 
+;; converts a gene into a list of id strings, chosen based on their probability
 (define (gene-express gene)
   (let ((v (rndf)))
     (car
@@ -41,6 +43,7 @@
        (list 0 #f)
        gene)))))
 
+;; old normalised, clamped version of removal
 (define (gene-remove-expression-old gene genome)
   (gene-normalise
    (map
@@ -53,11 +56,11 @@
     gene)))
 
 ;; min(p,(1-p))*0.1
-
 (define (calc-decrease p)
   (* (min p (- 1 p)) allele-decrease))
 
-(define (gene-remove-expression gene genome)
+;; new removal - assumes two alleles on each gene
+(define (gene-remove-expression-2 gene genome)
   (if (eq? (allele-id (car gene)) genome)
       (let ((dec (calc-decrease (allele-probability (car gene)))))
         (list
@@ -72,16 +75,28 @@
          (allele-modify-probability
           (cadr gene) (- (allele-probability (car gene)) dec))))))
 
+(define (allele-increase dec total-count)
+  (/ dec (- total-count 1)))
+
+;; general removal again, but using calc decrease
+(define (gene-remove-expression gene genome)
+  (let ((dec (calc-decrease (allele-probability (car gene)))))
+    (let ((inc (allele-increase dec (length gene))))
+      (map
+       (lambda (allele)
+         (if (eq? (allele-id allele) genome)
+             (allele-modify-probability allele (- (allele-probability allele) dec))
+             (allele-modify-probability allele (+ (allele-probability allele) inc))))
+       gene))))
+
 ;; a chromosome is simple a list of genes
 ;; returns a genome
 (define (chromosome-express chromo)
   (map gene-express chromo))
 
 ;; an expression is a list of allele ids
-
 (define (chromosome-remove-expression chromo expr)
   (map2 gene-remove-expression chromo expr))
-
 
 (define (allele-similarity allele expr)
   (if (eq? (allele-id allele) expr)
@@ -113,15 +128,18 @@
     a b)
    (length a)))
 
+;; force 2 alleles to be "on" for the toxic random choice
 (define (chromosome-express-toxic chromo)
-  (let ((num-alleles-on (+ 2 (random (- (length chromo) 2)))))
-    (let ((choice
-           (shuffle
-            (append
-             (build-list num-alleles-on (lambda (i) 0))
-             (build-list (- (length chromo) num-alleles-on) (lambda (i) 1))))))
-      (msg choice)
-      ((map2
-        (lambda (choice gene)
-          (allele-id (list-ref gene choice)))
-        choice chromo)))))
+  (chromosome-express chromo))
+
+
+;  (let ((num-alleles-on (+ 2 (random (- (length chromo) 2)))))
+;    (let ((choice
+;           (shuffle
+;            (append
+;             (build-list num-alleles-on (lambda (i) 0))
+;             (build-list (- (length chromo) num-alleles-on) (lambda (i) 1))))))
+;      ((map2
+;        (lambda (choice gene)
+;          (allele-id (list-ref gene choice)))
+;        choice chromo)))))

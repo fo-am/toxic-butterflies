@@ -34,25 +34,33 @@
   )
 
 (define (draw-chromosome ctx x y chromo)
+  (let ((current 0)
+        (pos 0))
   (index-for-each
    (lambda (i gene)
-     (set! ctx.fillStyle "#fff")
-     (set! ctx.font "bold 15pt amatic")
-     (ctx.drawImage
-      (find-image (string-append "alelle-" (+ i 1) ".png"))
-      (+ x -20 (* i 40)) (+ y 110))
+     (index-for-each
+      (lambda (i allele)
+        (set! ctx.fillStyle "#fff")
+        (set! ctx.font "bold 15pt amatic")
+        (ctx.drawImage
+         (find-image (string-append "alelle-" (+ current 1) ".png"))
+         (+ x -20 (* pos 40)) (+ y 110))
 
-     ;;(ctx.fillText (allele-id (car gene)) x (+ y (- (* i 40) 10)))
-     (set! ctx.fillStyle "#000")
-     (ctx.fillRect (+ x (* i 40)) y 10 100)
-     (set! ctx.fillStyle "#ff0")
-     (ctx.fillRect (+ x (* i 40))
-                   (+ y (- 100 (* 100 (allele-probability (car gene)))))
-                   10
-                   (* 100 (allele-probability (car gene))))
+        ;;(ctx.fillText (allele-id (car gene)) x (+ y (- (* i 40) 10)))
+        (set! ctx.fillStyle "#000")
+        (ctx.fillRect (+ x (* pos 40)) y 10 100)
+        (set! ctx.fillStyle "#ff0")
+        (ctx.fillRect (+ x (* pos 40))
+                      (+ y (- 100 (* 100 (allele-probability allele))))
+                      10
+                      (* 100 (allele-probability allele)))
+        (set! current (+ current 1))
+        (set! pos (+ pos 1)))
+      gene)
+     (set! pos (+ pos 1))
      )
    chromo)
-  )
+  ))
 
 (define (draw-expr ctx x y expr)
   (index-for-each
