@@ -47,13 +47,23 @@
     (list (allele "yellow-fw-band" 0.5)
           (allele "yellow-hw-bar" 0.5))))
 
+;(define (model)
+;  (list
+;   (list (allele "red-band-ray" 0.2)
+;         (allele "red-band-dennis-yellow-bar" 0.2)
+;         (allele "white-band-yellow-bar-rays" 0.2)
+;         (allele "white-band-dennis" 0.2)
+;         (allele "yellow-bar" 0.2))))
+
 (define (model)
   (list
-   (list (allele "red-band-ray" 0.2)
-         (allele "red-band-dennis-yellow-bar" 0.2)
-         (allele "white-band-yellow-bar-rays" 0.2)
-         (allele "white-band-dennis" 0.2)
-         (allele "yellow-bar" 0.2))))
+   (list (allele "red-band" 0.142)
+         (allele "red-band-yellow-bar" 0.142)
+         (allele "dennis-rays-yellow-band" 0.142)
+         (allele "dennis-yellow-band" 0.142)
+         (allele "yellow-band-yellow-bar" 0.142)
+         (allele "rays-yellow-band" 0.142)
+         (allele "red-yellow-bands" 0.142))))
 
 (define start-chromo (model))
 
@@ -80,11 +90,13 @@
 ;; 1-texture file number
 (define (expr-to-number expr)
   (cond
-   ((eq? (list-ref expr 0) "red-band-ray") 19)
-   ((eq? (list-ref expr 0) "red-band-dennis-yellow-bar") 10)
-   ((eq? (list-ref expr 0) "white-band-yellow-bar-rays") 18)
-   ((eq? (list-ref expr 0) "white-band-dennis") 21)
-   ((eq? (list-ref expr 0) "yellow-bar") 30)
+   ((eq? (list-ref expr 0) "red-band") 27)
+   ((eq? (list-ref expr 0) "red-band-yellow-bar") 26)
+   ((eq? (list-ref expr 0) "dennis-rays-yellow-band") 5)
+   ((eq? (list-ref expr 0) "dennis-yellow-band") 13)
+   ((eq? (list-ref expr 0) "yellow-band-yellow-bar") 28)
+   ((eq? (list-ref expr 0) "rays-yellow-band") 21)
+   ((eq? (list-ref expr 0) "red-yellow-bands") 25)
    (else (msg expr) 0)))
 
 (define pop-size 15)
