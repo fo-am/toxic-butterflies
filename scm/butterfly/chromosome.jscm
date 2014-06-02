@@ -140,6 +140,27 @@
     a b)
    (length a)))
 
+
+(define (find-probability genome pop)
+  (/ (foldl
+      (lambda (p r)
+        (+ r (if (eq? p genome) 1 0)))
+      0
+      pop)
+     (length pop)))
+
+
+(define (chromo-from-pop chromo pop)
+  (map
+   (lambda (gene)
+     (map
+      (lambda (a)
+        (allele
+         (allele-id a)
+         (find-probability (allele-id a) pop)))
+      gene))
+   chromo))
+
 ;; force 2 alleles to be "on" for the toxic random choice
 (define (chromosome-express-toxic chromo)
   (chromosome-express chromo))

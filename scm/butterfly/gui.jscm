@@ -81,6 +81,7 @@
                (allele "yellow-fw-band"
                        (+ (allele-probability (list-ref gene 2))
                           (allele-probability (list-ref gene 3))
+                          (allele-probability (list-ref gene 4))
                           (allele-probability (list-ref gene 5))
                           (allele-probability (list-ref gene 6))
                           ))

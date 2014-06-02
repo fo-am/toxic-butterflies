@@ -90,13 +90,13 @@
 ;; 1-texture file number
 (define (expr-to-number expr)
   (cond
-   ((eq? (list-ref expr 0) "red-band") 27)
-   ((eq? (list-ref expr 0) "red-band-yellow-bar") 26)
-   ((eq? (list-ref expr 0) "dennis-rays-yellow-band") 5)
-   ((eq? (list-ref expr 0) "dennis-yellow-band") 13)
-   ((eq? (list-ref expr 0) "yellow-band-yellow-bar") 28)
-   ((eq? (list-ref expr 0) "rays-yellow-band") 21)
-   ((eq? (list-ref expr 0) "red-yellow-bands") 25)
+   ((eq? (list-ref expr 0) "red-band") 27)                ;; 0
+   ((eq? (list-ref expr 0) "red-band-yellow-bar") 26)     ;; 1
+   ((eq? (list-ref expr 0) "dennis-rays-yellow-band") 5)  ;; 2
+   ((eq? (list-ref expr 0) "dennis-yellow-band") 13)      ;; 3
+   ((eq? (list-ref expr 0) "yellow-band-yellow-bar") 28)  ;; 4
+   ((eq? (list-ref expr 0) "rays-yellow-band") 21)        ;; 5
+   ((eq? (list-ref expr 0) "red-yellow-bands") 25)        ;; 6
    (else (msg expr) 0)))
 
 (define pop-size 15)
@@ -335,6 +335,11 @@
    (lambda (t c)
      (if (< health 1)
          (begin
+           ;; rebuild chromo from visible population
+           (set! chromo (chromo-from-pop
+                         chromo
+                         (map (lambda (b) (butterfly-expr b))
+                              (list-ref butterfly-list 0))))
            (nightjar-game-over c))
          c))
   (game-modify-mouse-hook
@@ -361,7 +366,7 @@
 
       (set! flash (* flash 0.9))
       (set! toxic-flash (* toxic-flash 0.9))
-      (set! health (clamp (- health (* 50 (game-time-delta c))) 0 100))
+      (set! health (clamp (- health (* 100 (game-time-delta c))) 0 100))
       (set! hint-time (+ hint-time 0.1))
 
       (draw-pie ctx 1100 700 health 100 0 220 120)
