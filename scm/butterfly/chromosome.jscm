@@ -82,14 +82,23 @@
 
 ;; general removal again, but using calc decrease
 (define (gene-remove-expression gene genome)
-  (let ((dec (calc-decrease (allele-probability (car gene))))
-        (total (length gene)))
-    (let ((inc (allele-increase dec total)))
+  (let ((dec
+         (foldl
+          (lambda (allele r)
+            (if (eq? (allele-id allele) genome)
+                ;; get change in probability
+                (- (allele-probability allele)
+                   (max 0 (- (allele-probability allele)
+                             (calc-decrease (allele-probability allele)))))
+                r))
+          0 gene)))
+    (let ((inc (allele-increase dec (length gene))))
+      ;; apply the change
       (map
        (lambda (allele)
          (if (eq? (allele-id allele) genome)
-             (allele-modify-probability allele (max 0 (- (allele-probability allele) dec)))
-             (allele-modify-probability allele (min 1 (+ (allele-probability allele) inc)))))
+             (allele-modify-probability allele (- (allele-probability allele) dec))
+             (allele-modify-probability allele (+ (allele-probability allele) inc))))
        gene))))
 
 ;; a chromosome is simple a list of genes

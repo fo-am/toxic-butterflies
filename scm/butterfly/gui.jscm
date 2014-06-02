@@ -68,25 +68,25 @@
             (lambda (gene)
               (list
                (allele "dennis-patch"
-                       (min 1 (+ (allele-probability (list-ref gene 2))
-                                 (allele-probability (list-ref gene 3)))))
+                       (+ (allele-probability (list-ref gene 2))
+                          (allele-probability (list-ref gene 3))))
                (allele "hw-rays"
-                       (min 1 (+ (allele-probability (list-ref gene 2))
-                                 (allele-probability (list-ref gene 5)))))
+                       (+ (allele-probability (list-ref gene 2))
+                          (allele-probability (list-ref gene 5))))
                (allele "red-fw-band"
-                       (min 1 (+ (allele-probability (list-ref gene 0))
-                                 (allele-probability (list-ref gene 1))
-                                 (allele-probability (list-ref gene 6))
-                                 )))
+                       (+ (allele-probability (list-ref gene 0))
+                          (allele-probability (list-ref gene 1))
+                          (allele-probability (list-ref gene 6))
+                          ))
                (allele "yellow-fw-band"
-                       (min 1 (+ (allele-probability (list-ref gene 2))
-                                 (allele-probability (list-ref gene 3))
-                                 (allele-probability (list-ref gene 5))
-                                 (allele-probability (list-ref gene 6))
-                                 )))
+                       (+ (allele-probability (list-ref gene 2))
+                          (allele-probability (list-ref gene 3))
+                          (allele-probability (list-ref gene 5))
+                          (allele-probability (list-ref gene 6))
+                          ))
                (allele "yellow-hw-bar"
-                       (min 1 (+ (allele-probability (list-ref gene 1))
-                                 (allele-probability (list-ref gene 4)))))))
+                       (+ (allele-probability (list-ref gene 1))
+                          (allele-probability (list-ref gene 4))))))
             chromo)))
 
 
