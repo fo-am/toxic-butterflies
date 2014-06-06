@@ -13,6 +13,14 @@
    true)
   (ctx.closePath))
 
+(define (draw-health ctx x y t max-t)
+  (let ((h (/ t max-t)))
+    (set! ctx.fillStyle (string-append "rgba(" (Math.floor (* (- 1 h) 255)) ", "
+                                       (Math.floor (* h 255)) ", " 0 ", 1.0)"))
+    (ctx.fillRect (+ x 50) (+ y 30) (* h 245) 37)
+    (ctx.drawImage (find-image "health.png") x y)))
+
+
 (define (draw-pie ctx x y time max-time r g b)
   (stroke-pie ctx (+ x 3) (+ y 3) max-time max-time)
   (set! ctx.fillStyle (string-append "rgba(" (Math.floor (/ r 2)) ", "

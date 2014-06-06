@@ -306,11 +306,13 @@
   (game-modify-render
    (lambda (ctx)
      (set! ctx.font "normal 40pt amatic")
-     (wrap-text ctx "You are a hungry bird and you need to eat butterflies..." 0 200)
-     (wrap-text ctx "Watch out for the toxic ones!" 0 280)
-     (set! ctx.font "normal 30pt amatic")
-     (wrap-text ctx "Tip - try to remember the wing patterns." 0 500)
-
+     (set! ctx.fillStyle "#fff")
+     (set! ctx.strokeStyle "#fff")
+     (wrap-text ctx "You are a hungry bird!" 0 400)
+     (wrap-text ctx "Eat the butterflies" 0 480)
+     (draw-health ctx 450 30 100 100)
+;;     (set! ctx.font "normal 30pt amatic")
+;;     (wrap-text ctx "Tip - try to remember the wing patterns." 0 500)
      )
    (game-modify-buttons
     (list
@@ -366,23 +368,26 @@
 
       (set! flash (* flash 0.9))
       (set! toxic-flash (* toxic-flash 0.9))
-      (set! health (clamp (- health (* 100 (game-time-delta c))) 0 100))
+      (set! health (clamp (- health (* 75 (game-time-delta c))) 0 100))
       (set! hint-time (+ hint-time 0.1))
 
-      (draw-pie ctx 1100 700 health 100 0 220 120)
+
+      ;; (draw-pie ctx 1100 700 health 100 0 220 120)
 
       (when (> flash 10)
-            (draw-flash ctx 1100 700
+            (draw-flash ctx 495 65
                         200
                         0 255 0 (/ flash 255)))
 
       (when (> toxic-flash 10)
-            (draw-flash ctx 1100 700
+            (draw-flash ctx 495 65
                         200
                         255 127 200 (/ toxic-flash 255)))
 
+      (draw-health ctx 450 30 health 100)
 
-      (draw-chromosome ctx 50 630 chromo)
+
+      ;;(draw-chromosome ctx 50 630 chromo)
       ;;(draw-expr ctx 50 350 toxic-expr)
 
       (set! ctx.strokeStyle "#fff")
@@ -440,28 +445,28 @@
 ;                   (list-ref butterfly-list 0)))
 ;            (when (> hint-time (+ hint-dur 20)) (set! hint-time 0)))
 
-      (set! ctx.fillStyle "#fff")
-      (set! ctx.font "bold 20pt amatic")
+      ;(set! ctx.fillStyle "#fff")
+      ;(set! ctx.font "bold 20pt amatic")
 
-      (wrap-text ctx
-                 (string-append "Alelle decrease: " (number-display allele-decrease))
-                 -440 280 1000 1000)
+      ;      (wrap-text ctx
+      ;           (string-append "Alelle decrease: " (number-display allele-decrease))
+      ;           -440 280 1000 1000)
 
       (draw-gobble ctx)
       )
     (game-modify-buttons
      (list
-      (image-button
-       "" 80 280 "none" (find-image "plus.png")
-       (lambda (c)
-         (set! allele-decrease (+ allele-decrease 0.01))
-         c))
+;      (image-button
+;       "" 80 280 "none" (find-image "plus.png")
+;       (lambda (c)
+;         (set! allele-decrease (+ allele-decrease 0.01))
+;         c))
 
-      (image-button
-       "" 50 280 "none" (find-image "minus.png")
-       (lambda (c)
-         (set! allele-decrease (- allele-decrease 0.01))
-         c))
+ ;     (image-button
+ ;      "" 50 280 "none" (find-image "minus.png")
+ ;      (lambda (c)
+ ;        (set! allele-decrease (- allele-decrease 0.01))
+ ;        c))
 
       )
      c)))))
@@ -521,6 +526,7 @@
    "alelle-3.png"
    "alelle-4.png"
    "alelle-5.png"
+   "health.png"
    ))
  (lambda ()
    (start-game canvas ctx)))
