@@ -384,8 +384,6 @@
                         200
                         255 127 200 (/ toxic-flash 255)))
 
-      (draw-health ctx 450 30 health 100)
-
 
       ;;(draw-chromosome ctx 50 630 chromo)
       ;;(draw-expr ctx 50 350 toxic-expr)
@@ -408,6 +406,7 @@
              (translate (vector 0 -0.3 2))
              (render-butterfly toxic-example)))
 
+      (draw-health ctx 450 30 health 100)
 
       ;;(set! ctx.font "bold 40pt amatic")
       ;;(set! ctx.fillStyle "#fff")
