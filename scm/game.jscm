@@ -306,11 +306,11 @@
   (game-modify-render
    (lambda (ctx)
      (set! ctx.font "normal 40pt amatic")
-     (set! ctx.fillStyle "#fff")
-     (set! ctx.strokeStyle "#fff")
      (wrap-text ctx "You are a hungry bird!" 0 400)
      (wrap-text ctx "Eat the butterflies" 0 480)
      (draw-health ctx 450 30 100 100)
+     (set! ctx.fillStyle "#fff")
+     (set! ctx.strokeStyle "#fff")
 ;;     (set! ctx.font "normal 30pt amatic")
 ;;     (wrap-text ctx "Tip - try to remember the wing patterns." 0 500)
      )
