@@ -259,7 +259,7 @@
 
   (for-each render-butterflies butterfly-list)
 
-  (with-state
+   (with-state
    (translate (vector 0 0.7 0))
    (scale (vector 0.75 0.75 0.75))
    (render-butterfly toxic-example))
@@ -275,6 +275,40 @@
    (translate (vector 0 0 -100))
    (scale (vector 100 100 100))
    (draw-cube)))
+
+
+(define (render-more-info-1)
+  (set! butterfly-list
+        (list
+         (update-comp-butterflies (list-ref butterfly-list 0) 0.01)
+         (update-comp-butterflies (list-ref butterfly-list 1)
+                                  (if (< (- (time) comp-time) 2) 0 0.01))))
+
+  (for-each render-butterflies butterfly-list)
+
+   (with-state
+   (translate (vector 0 2 0))
+   (scale (vector 0.75 0.75 0.75))
+   (render-butterfly toxic-example))
+
+  (with-state
+   (texture bg-tex)
+   (translate (vector 0 0 -100))
+   (scale (vector 100 100 100))
+   (draw-cube)))
+
+(define (render-more-info-2)
+   (with-state
+   (translate (vector 0 -1.4 0))
+   (scale (vector 0.75 0.75 0.75))
+   (render-butterfly toxic-example))
+
+  (with-state
+   (texture bg-tex)
+   (translate (vector 0 0 -100))
+   (scale (vector 100 100 100))
+   (draw-cube)))
+
 
 
 (define (nightjar-intro c)
@@ -307,7 +341,7 @@
    (lambda (ctx)
      (set! ctx.font "normal 40pt amatic")
      (wrap-text ctx "You are a hungry bird!" 0 400)
-     (wrap-text ctx "Eat the butterflies" 0 480)
+     (wrap-text ctx "Eat the butterflies to stay alive!" 0 480)
      (draw-health ctx 450 30 100 100)
      (set! ctx.fillStyle "#fff")
      (set! ctx.strokeStyle "#fff")
@@ -346,7 +380,7 @@
          c))
   (game-modify-mouse-hook
    (lambda (e c)
-     (when (eq? e "down")
+     (when (and (eq? e "down") (> toxic-hit-time 99))
            (set! butterfly-list (detect-hits-butterflies butterfly-list c))
            ;; instantly replace edible butterfly
            (when (not (zero? found))
@@ -401,7 +435,9 @@
             (set! ctx.font "bold 60pt amatic")
             (draw-toxic-bg ctx)
             (set! ctx.fillStyle "#fff")
-            (wrap-text ctx "Ouch!" 0 200 500 100)
+            (wrap-text ctx "UGH!" 0 200 500 100)
+            (set! ctx.font "bold 50pt amatic")
+            (wrap-text ctx "That butterfly tasted disgusting!" 0 700)
             (with-state
              (translate (vector 0 -0.3 2))
              (render-butterfly toxic-example)))
@@ -498,14 +534,101 @@
        (game-modify-buttons
         (list
          (image-button
-          "Done" 600 750 "jumpy" (find-image "button.png")
+          "Learn more" 500 750 "jumpy" (find-image "button.png")
+          (lambda (c)
+            (nightjar-more-info-1 c)))
+         (image-button
+          "Play again!" 740 750 "jumpy" (find-image "button.png")
           (lambda (c)
             (nightjar-intro c)))
          )
         c))))))
 
+(define (nightjar-more-info-1 c)
+  (every-frame (render-more-info-1))
+  (game-modify-update
+   (lambda (t c) c)
+   (game-modify-mouse-hook
+    (lambda (e c) c)
+    (game-modify-render
+     (lambda (ctx)
+       (set! ctx.font "normal 40pt amatic")
+       (wrap-text ctx "You have made mimicry evolve by natural selection!" 0 50)
+       (set! ctx.font "normal 30pt amatic")
+       (wrap-text ctx "When eating the butterflies, you learnt to avoid toxic ones that all had this colour pattern:" 0 100)
+       (wrap-text ctx "But you also avoided edible ones that had the same pattern!" 0 250)
+       (set! ctx.font "normal 25pt amatic")
+       (wrap-text ctx "This reduced the number of edible butterflies" -350 300)
+       (wrap-text ctx "that had different patterns..." -350 340)
+       (wrap-text ctx "...and increased the number that had" 340 300)
+       (wrap-text ctx "the same pattern as the toxic one." 340 340)
+
+       (set! ctx.fillStyle "#fff")
+
+       (set! ctx.font "normal 40pt amatic"))
+     (game-modify-buttons
+      (list
+       (image-button
+        "Play again!" 740 750 "jumpy" (find-image "button.png")
+        (lambda (c)
+          (nightjar-intro c)))
+       (image-button
+        "Learn more" 500 750 "jumpy" (find-image "button.png")
+        (lambda (c)
+          (nightjar-more-info-2 c)))
+       )
+      c)))))
 
 
+(define (nightjar-more-info-2 c)
+  (every-frame (render-more-info-2))
+  (game-modify-update
+   (lambda (t c) c)
+   (game-modify-mouse-hook
+    (lambda (e c) c)
+    (game-modify-render
+     (lambda (ctx)
+       (set! ctx.font "normal 30pt amatic")
+       (wrap-text ctx "The presence or absence of each of the wing colour pattern elements is controlled genetically." 0 50)
+
+       (set! ctx.font "normal 30pt amatic")
+       (wrap-text ctx "When you eat the butterflies you remove some of these genes from the population." 0 100)
+
+       (ctx.drawImage (find-image (string-append "alelle-1.png")) 200 120)
+       (ctx.drawImage (find-image (string-append "alelle-2.png")) 400 120)
+       (ctx.drawImage (find-image (string-append "alelle-3.png")) 600 120)
+       (ctx.drawImage (find-image (string-append "alelle-4.png")) 800 120)
+       (ctx.drawImage (find-image (string-append "alelle-5.png")) 1000 120)
+
+       (set! ctx.font "normal 20pt amatic")
+       (wrap-text ctx "dennis" -390 200)
+       (wrap-text ctx "rays" -190 200)
+       (wrap-text ctx "red band" 10 200)
+       (wrap-text ctx "yellow band" 210 200)
+       (wrap-text ctx "yellow bar" 410 200)
+
+       (set! ctx.font "normal 30pt amatic")
+       (wrap-text ctx "This increases or decreases the frequency of the wing colour pattern elements in the population:" 0 250)
+
+       (draw-chromosome ctx 190 280 start-chromo)
+       (draw-chromosome ctx 860 280 chromo)
+
+       (set! ctx.fillStyle "#fff")
+       (set! ctx.font "normal 25pt amatic")
+       (wrap-text ctx "The patterns that are present in the toxic butterfly probably increased and the patterns that are absent probably decreased." 0 480)
+
+       (set! ctx.font "normal 30pt amatic")
+       (wrap-text ctx "The change in the genes controlling the colour patterns produces evolutionary change." 0 650)
+
+       (set! ctx.font "normal 40pt amatic"))
+     (game-modify-buttons
+      (list
+       (image-button
+        "Play again!" 620 750 "jumpy" (find-image "button.png")
+        (lambda (c)
+          (nightjar-intro c)))
+       )
+      c)))))
 
 
 
