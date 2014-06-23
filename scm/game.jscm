@@ -332,7 +332,12 @@
        (lambda (c)
          (build-population)
          (nightjar-show-toxic c)))
-      )
+
+      (image-button
+       "Made by" 620 710 "" (find-image "foam-logo-wos.png")
+       (lambda (c)
+         (set! window.location "http://fo.am/kernow")
+         c)))
      c))))
 
 
@@ -649,6 +654,7 @@
    "alelle-4.png"
    "alelle-5.png"
    "health.png"
+   "foam-logo-wos.png"
    ))
  (lambda ()
    (start-game canvas ctx)))
