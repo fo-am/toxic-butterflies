@@ -88,7 +88,7 @@
     (let ((gl (renderer-gl r))
           (hook (renderer-hook r)))
       (gl.viewport 0 0 gl.viewportWidth gl.viewportHeight)
-      (gl.clearColor 1.0 0.2 0.8 1)
+      (gl.clearColor 0 0 0 1)
       (gl.clear (js "gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT"))
       (mat4.perspective 45 (/ gl.viewportWidth gl.viewportHeight) 0.1 1000.0
                         (renderer-view r))
