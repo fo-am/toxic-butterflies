@@ -435,7 +435,7 @@
             (wrap-text ctx "Health Is Low!" 0 400))
 
       (when (and (< toxic-hit-time 100))
-            (set! toxic-hit-time (+ toxic-hit-time 1))
+            (set! toxic-hit-time (+ toxic-hit-time (* 600 (game-time-delta c))))
             (set! ctx.fillStyle "#f00")
             (set! ctx.font "bold 60pt amatic")
             (draw-toxic-bg ctx)
